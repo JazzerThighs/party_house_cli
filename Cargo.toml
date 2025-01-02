@@ -1,0 +1,9 @@
+[package]
+name = "party_house_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+card_deck = "*"
+rand = "*"
+lazy_static = "*"
