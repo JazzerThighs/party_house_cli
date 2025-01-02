@@ -6,4 +6,3 @@ edition = "2021"
 [dependencies]
 card_deck = "*"
 rand = "*"
-lazy_static = "*"
