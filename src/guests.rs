@@ -1,5 +1,3 @@
-use card_deck::Deck;
-use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::collections::HashMap;
 
 #[derive(Default, Debug, Clone)]
@@ -9,14 +7,9 @@ pub struct Guest {
     pub emoji: char,
     pub cost: u8,
     pub popularity: i8,
-    pub popularity_per_trouble: i8,
-    pub popularity_per_vacancy: i8,
-    pub popularity_for_full_house: i8,
     pub cash: i8,
-    pub cash_per_trouble: i8,
-    pub cash_per_vacancy: i8,
-    pub cash_for_full_house: i8,
-    pub trouble: i8,
+    pub trouble: bool,
+    pub chill: bool,
     pub stars: i8,
     pub tagalongs: u8,
     pub summonings: u8,
@@ -118,7 +111,7 @@ pub fn guest_lists() -> (
             guest: WILD_BUDDY,
             emoji: '🤮',
             popularity: 2,
-            trouble: 1,
+            trouble: true,
             ..Default::default()
         },
     );
@@ -139,7 +132,7 @@ pub fn guest_lists() -> (
             emoji: '🐒',
             cost: 3,
             popularity: 4,
-            trouble: 1,
+            trouble: true,
             ..Default::default()
         },
     );
@@ -182,7 +175,7 @@ pub fn guest_lists() -> (
             emoji: '✌',
             cost: 4,
             popularity: 1,
-            trouble: -1,
+            chill: true,
             ..Default::default()
         },
     );
@@ -194,7 +187,7 @@ pub fn guest_lists() -> (
             cost: 5,
             popularity: 3,
             cash: 2,
-            trouble: 1,
+            trouble: true,
             ..Default::default()
         },
     );
@@ -204,7 +197,6 @@ pub fn guest_lists() -> (
             guest: COMEDIAN,
             emoji: '🤣',
             cost: 5,
-            popularity_for_full_house: 5,
             cash: -1,
             ..Default::default()
         },
@@ -228,7 +220,6 @@ pub fn guest_lists() -> (
             emoji: '😶',
             cost: 4,
             popularity: 1,
-            popularity_per_vacancy: 1,
             ..Default::default()
         },
     );
@@ -301,7 +292,7 @@ pub fn guest_lists() -> (
             emoji: '🔫',
             cost: 6,
             cash: 4,
-            trouble: 1,
+            trouble: true,
             ..Default::default()
         },
     );
@@ -312,7 +303,7 @@ pub fn guest_lists() -> (
             emoji: '🐶',
             cost: 7,
             popularity: 2,
-            trouble: -1,
+            chill: true,
             ..Default::default()
         },
     );
@@ -324,7 +315,7 @@ pub fn guest_lists() -> (
             cost: 7,
             popularity: 2,
             cash: 3,
-            trouble: 1,
+            trouble: true,
             ..Default::default()
         },
     );
@@ -346,7 +337,6 @@ pub fn guest_lists() -> (
             emoji: '🖋',
             cost: 8,
             popularity: 1,
-            popularity_per_trouble: 2,
             ..Default::default()
         },
     );
@@ -413,7 +403,6 @@ pub fn guest_lists() -> (
             emoji: '🍺',
             cost: 11,
             popularity: 1,
-            cash_per_trouble: 2,
             ..Default::default()
         },
     );
@@ -488,7 +477,7 @@ pub fn guest_lists() -> (
             emoji: '🐺',
             cost: 5,
             popularity: 4,
-            trouble: 1,
+            trouble: true,
             ..Default::default()
         },
     );
@@ -529,7 +518,7 @@ pub fn guest_lists() -> (
             guest: DINOSAUR,
             emoji: '🦖',
             cost: 25,
-            trouble: 1,
+            trouble: true,
             stars: 1,
             ..Default::default()
         },
@@ -573,7 +562,7 @@ pub fn guest_lists() -> (
             guest: UNICORN,
             emoji: '🦄',
             cost: 45,
-            trouble: -1,
+            chill: true,
             stars: 1,
             ..Default::default()
         },

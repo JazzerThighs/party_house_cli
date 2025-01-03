@@ -1,11 +1,34 @@
 use crate::guests::*;
-use card_deck::Deck;
 use rand::{seq::SliceRandom, thread_rng, Rng};
+use clearscreen::*;
+use std::io;
+
+pub fn get_num_players() -> usize {
+    let num_players: usize;
+    loop {
+        println!("Welcome to Party House: CLI Edition! Enter the number of players:");
+        let mut input = String::new();
+        if let Err(e) = io::stdin().read_line(&mut input) {
+            eprintln!("Error reading input: {}", e);
+            continue;
+        }
+        match input.trim().parse::<usize>() {
+            Ok(num) if num > 0 => {
+                num_players = num;
+                break;
+            }
+            Ok(_) => eprintln!("The number of players must be at least 1. Please try again."),
+            Err(_) => eprintln!("Invalid input. Please enter a valid positive number.")
+        }
+    }
+    clear().unwrap();
+    num_players
+}
 
 pub fn create_scenerio(num_players: usize) -> Vec<Guest> {
     let (friends, randos, star_guests) = guest_lists();
 
-    let num_stocks = usize::max(4, 4 + (2 * (num_players - 1)));
+    let num_stocks = 4 + (2 * (num_players - 1));
 
     let mut store = vec![friends[&GuestType::OLD_FRIEND].clone(); num_stocks];
     store.extend(vec![friends[&GuestType::OLD_FRIEND].clone(); num_stocks]);
@@ -31,17 +54,5 @@ pub fn create_scenerio(num_players: usize) -> Vec<Guest> {
     for i in 0..store.len() {
         store[i].id = i + 8;
     }
-
     store
-}
-
-pub fn init_rolodex() -> Deck<Guest> {
-    let (friends, _, _) = guest_lists();
-    let mut rolodex = vec![friends[&GuestType::OLD_FRIEND].clone(); 4];
-    rolodex.extend(vec![friends[&GuestType::RICH_PAL].clone(); 2]);
-    rolodex.extend(vec![friends[&GuestType::WILD_BUDDY].clone(); 4]);
-    for i in 0..rolodex.len() {
-        rolodex[i].id = i;
-    }
-    Deck::new(rolodex)
 }
