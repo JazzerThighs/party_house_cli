@@ -1,12 +1,12 @@
-use crate::{guests::*, player::*};
+use crate::{clampedi8::*, guests::*, player::*};
 
 pub struct Party {
     pub attendees: Vec<Guest>,
     pub capacity: ClampedI8,
     pub trouble_count: u8,
     pub chill_count: u8,
-    pub still_partying: bool,
-    pub still_shopping: bool
+    pub narcs: bool,
+    pub overflow: bool
 }
 
 pub fn init_party(cap: &ClampedI8) -> Party {
@@ -15,8 +15,8 @@ pub fn init_party(cap: &ClampedI8) -> Party {
         capacity: cap.clone(),
         trouble_count: 0,
         chill_count: 0,
-        still_partying: true,
-        still_shopping: true
+        narcs: false,
+        overflow: false
     }
 }
 
