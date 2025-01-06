@@ -1,4 +1,4 @@
-use crate::{guests::*, player::*};
+use crate::{init::*, guests::*};
 
 pub fn cost_of_expansion(capacity: i8) -> i8 {
     match capacity {
@@ -10,5 +10,5 @@ pub fn cost_of_expansion(capacity: i8) -> i8 {
 }
 
 pub fn do_shopping(store: &mut Vec<(Guest, f32)>, player: &mut Player) -> bool {
-    false
+    false 
 }

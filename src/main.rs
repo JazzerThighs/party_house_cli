@@ -3,22 +3,25 @@ mod clampedi8;
 mod guests;
 mod init;
 mod party;
-mod player;
 mod store;
 use clearscreen::clear;
-use {init::*, party::*, player::*, store::*};
+use {init::*, party::*, store::*};
 
 fn main() {
     let num_players = get_num_players();
-    let mut store = init_scenerio(num_players);
     let mut players = init_players(num_players);
+    let mut store = init_scenerio(num_players);
     let mut day_count = 1;
 
     'gameloop: loop {
+        clear().unwrap();
+
         for player in players.iter_mut() {
+            println!("Player {}, throw a party!", player.id);
             let mut party = init_party(&player.capacity);
 
             while do_partying(&mut party, player) {}
+            
             match (party.narcs, party.overflow, player.victory) {
                 (true, _, _) => {}
                 (_, true, _) => {}
@@ -27,6 +30,7 @@ fn main() {
             }
         }
 
+        clear().unwrap();
         match num_players {
             0 => unreachable!(),
             1 => {
