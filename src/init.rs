@@ -5,7 +5,6 @@ use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::io;
 
 pub fn get_num_players() -> usize {
-    let num_players: usize;
     loop {
         println!("Welcome to Party House: CLI Edition! Enter the number of players:");
         let mut input = String::new();
@@ -15,20 +14,73 @@ pub fn get_num_players() -> usize {
         }
         match input.trim().parse::<usize>() {
             Ok(num) if num > 0 => {
-                num_players = num;
-                break;
+                clear().unwrap();
+                return num;
             }
             Ok(_) => eprintln!("The number of players must be at least 1. Please try again."),
             Err(_) => eprintln!("Invalid input. Please enter a valid positive number."),
         }
     }
-    clear().unwrap();
-    num_players
 }
-fn get_num_stocks(num_players: usize) -> f32 {
+
+#[derive(Debug, Clone)]
+pub struct Player {
+    pub rolodex: Deck<crate::guests::Guest>,
+    pub popularity: ClampedI8,
+    pub cash: ClampedI8,
+    pub capacity: ClampedI8,
+    pub id: usize,
+}
+pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
+    let mut players = vec![];
+    let star_guest_arrivals_for_win: usize = match num_players {
+        0 => unreachable!(),
+        1 => 4,
+        2.. => 3
+    };
+    let rolodex = {
+        let (friends, _, _) = guest_lists();
+        let mut rolodex = vec![friends[&GuestType::OLD_FRIEND].clone(); 4];
+        rolodex.extend(vec![friends[&GuestType::RICH_PAL].clone(); 2]);
+        rolodex.extend(vec![friends[&GuestType::WILD_BUDDY].clone(); 4]);
+        for i in 0..rolodex.len() {
+            rolodex[i].id = i;
+        }
+        Deck::new(rolodex)
+    };
+    for i in 0..num_players {
+        players.push(Player {
+            rolodex: rolodex.clone(),
+            popularity: ClampedI8 {
+                value: 0,
+                min: 0,
+                max: 65,
+            },
+            cash: ClampedI8 {
+                value: 0,
+                min: 0,
+                max: 30,
+            },
+            capacity: ClampedI8 {
+                value: 5,
+                min: 5,
+                max: 34,
+            },
+            id: i,
+        })
+    }
+    (players, star_guest_arrivals_for_win)
+}
+
+#[derive(Debug)]
+pub struct Store {
+    pub stock: Vec<(Guest, f32)>,
+    pub still_shopping: bool
+}
+const fn get_num_stocks(num_players: usize) -> f32 {
     (4 + (2 * (num_players - 1))) as f32
 }
-pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
+pub fn init_scenerio(num_players: usize) -> Store {
     let (friends, randos, star_guests) = guest_lists();
     let num_stocks = get_num_stocks(num_players);
     use GuestType::*;
@@ -114,27 +166,27 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
     println!("Select desired Party Scenerio:\n");
     print!("1 -> Alien Invitation");
     for i in 0..alien_invitation.len() {
-        print!("{}", alien_invitation[i].0.emoji);
+        print!("{} ", alien_invitation[i].0.emoji);
     }
     println!("\n");
     print!("2 -> High Or Low");
     for i in 0..high_or_low.len() {
-        print!("{}", high_or_low[i].0.emoji);
+        print!("{} ", high_or_low[i].0.emoji);
     }
     println!("\n");
-    print!("2 -> Best Wishes");
+    print!("3 -> Best Wishes");
     for i in 0..best_wishes.len() {
-        print!("{}", best_wishes[i].0.emoji);
+        print!("{} ", best_wishes[i].0.emoji);
     }
     println!("\n");
-    print!("2 -> Money Management");
+    print!("4 -> Money Management");
     for i in 0..money_management.len() {
-        print!("{}", money_management[i].0.emoji);
+        print!("{} ", money_management[i].0.emoji);
     }
     println!("\n");
-    print!("2 -> A Magical Night");
+    print!("5 -> A Magical Night");
     for i in 0..a_magical_night.len() {
-        print!("{}", a_magical_night[i].0.emoji);
+        print!("{} ", a_magical_night[i].0.emoji);
     }
     println!("\n");
     println!("6 -> Randomized Scenerios\n");
@@ -191,56 +243,13 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
         }
     }
     clear().unwrap();
-    store
-}
-
-#[derive(Debug, Clone)]
-pub struct Player {
-    pub rolodex: Deck<crate::guests::Guest>,
-    pub popularity: ClampedI8,
-    pub cash: ClampedI8,
-    pub capacity: ClampedI8,
-    pub victory: bool,
-    pub id: usize,
-}
-
-pub fn init_players(num_players: usize) -> Vec<Player> {
-    let mut players = vec![];
-    let rolodex = {
-        let (friends, _, _) = guest_lists();
-        let mut rolodex = vec![friends[&GuestType::OLD_FRIEND].clone(); 4];
-        rolodex.extend(vec![friends[&GuestType::RICH_PAL].clone(); 2]);
-        rolodex.extend(vec![friends[&GuestType::WILD_BUDDY].clone(); 4]);
-        for i in 0..rolodex.len() {
-            rolodex[i].id = i;
-        }
-        Deck::new(rolodex)
-    };
-    for i in 0..num_players {
-        players.push(Player {
-            rolodex: rolodex.clone(),
-            popularity: ClampedI8 {
-                value: 0,
-                min: 0,
-                max: 65,
-            },
-            cash: ClampedI8 {
-                value: 0,
-                min: 0,
-                max: 30,
-            },
-            capacity: ClampedI8 {
-                value: 5,
-                min: 5,
-                max: 34,
-            },
-            victory: false,
-            id: i + 1,
-        })
+    Store {
+        stock: store,
+        still_shopping: true
     }
-    players
 }
 
+#[derive(Debug)]
 pub struct Party {
     pub attendees: Vec<Guest>,
     pub capacity: ClampedI8,
@@ -248,9 +257,10 @@ pub struct Party {
     pub chill_count: u8,
     pub narcs: bool,
     pub overflow: bool,
+    pub star_guest_arrivals_for_win: usize
+    pub still_partying: bool
 }
-
-pub fn init_party(cap: &ClampedI8) -> Party {
+pub fn init_party(cap: &ClampedI8, star_guest_arrivals_for_win: usize) -> Party {
     Party {
         attendees: vec![],
         capacity: cap.clone(),
@@ -258,5 +268,7 @@ pub fn init_party(cap: &ClampedI8) -> Party {
         chill_count: 0,
         narcs: false,
         overflow: false,
+        star_guest_arrivals_for_win,
+        still_partying: true
     }
 }
