@@ -2,22 +2,29 @@ use crate::{clampedi8::ClampedI8, guests::*};
 use card_deck::Deck;
 use clearscreen::*;
 use rand::{seq::SliceRandom, thread_rng, Rng};
-use std::io;
+use std::{cmp::max, io::stdin};
 
 pub fn get_num_players() -> usize {
     loop {
+        clear().unwrap();
         println!("Welcome to Party House: CLI Edition! Enter the number of players:");
         let mut input = String::new();
-        if let Err(e) = io::stdin().read_line(&mut input) {
+        if let Err(e) = stdin().read_line(&mut input) {
             eprintln!("Error reading input: {}", e);
             continue;
         }
         match input.trim().parse::<usize>() {
-            Ok(num) if num > 0 => {
+            Ok(num) => {
                 clear().unwrap();
-                return num;
+                print!("{} Player{} selected!\n\n", max(num, 1), {
+                    if num == 1 {
+                        ""
+                    } else {
+                        "s"
+                    }
+                });
+                return max(num, 1);
             }
-            Ok(_) => eprintln!("The number of players must be at least 1. Please try again."),
             Err(_) => eprintln!("Invalid input. Please enter a valid positive number."),
         }
     }
@@ -36,7 +43,7 @@ pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
     let star_guest_arrivals_for_win: usize = match num_players {
         0 => unreachable!(),
         1 => 4,
-        2.. => 3
+        2.. => 3,
     };
     let rolodex = {
         let (friends, _, _) = guest_lists();
@@ -75,7 +82,7 @@ pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
 #[derive(Debug)]
 pub struct Store {
     pub stock: Vec<(Guest, f32)>,
-    pub still_shopping: bool
+    pub still_shopping: bool,
 }
 const fn get_num_stocks(num_players: usize) -> f32 {
     (4 + (2 * (num_players - 1))) as f32
@@ -101,7 +108,7 @@ pub fn init_scenerio(num_players: usize) -> Store {
         (randos[&MR_POPULAR].clone(), num_stocks),
         (randos[&DANCER].clone(), num_stocks),
         (randos[&AUCTIONEER].clone(), num_stocks),
-        (star_guests[&ALIEN].clone(), f32::INFINITY)
+        (star_guests[&ALIEN].clone(), f32::INFINITY),
     ];
     let high_or_low = vec![
         (randos[&PRIVATE_I].clone(), num_stocks),
@@ -116,7 +123,7 @@ pub fn init_scenerio(num_players: usize) -> Store {
         (randos[&WRESTLER].clone(), num_stocks),
         (randos[&CLIMBER].clone(), num_stocks),
         (star_guests[&MERMAID].clone(), f32::INFINITY),
-        (star_guests[&SUPERHERO].clone(), f32::INFINITY)
+        (star_guests[&SUPERHERO].clone(), f32::INFINITY),
     ];
     let best_wishes = vec![
         (randos[&MONKEY].clone(), num_stocks),
@@ -131,7 +138,7 @@ pub fn init_scenerio(num_players: usize) -> Store {
         (randos[&CELEBRITY].clone(), num_stocks),
         (randos[&BARTENDER].clone(), num_stocks),
         (star_guests[&DINOSAUR].clone(), f32::INFINITY),
-        (star_guests[&GENIE].clone(), f32::INFINITY)
+        (star_guests[&GENIE].clone(), f32::INFINITY),
     ];
     let money_management = vec![
         (randos[&PRIVATE_I].clone(), num_stocks),
@@ -146,7 +153,7 @@ pub fn init_scenerio(num_players: usize) -> Store {
         (randos[&CUTE_DOG].clone(), num_stocks),
         (randos[&SPY].clone(), num_stocks),
         (star_guests[&DRAGON].clone(), f32::INFINITY),
-        (star_guests[&LEPRECHAUN].clone(), f32::INFINITY)
+        (star_guests[&LEPRECHAUN].clone(), f32::INFINITY),
     ];
     let a_magical_night = vec![
         (randos[&INTROVERT].clone(), num_stocks),
@@ -161,38 +168,38 @@ pub fn init_scenerio(num_players: usize) -> Store {
         (randos[&CELEBRITY].clone(), num_stocks),
         (randos[&CLIMBER].clone(), num_stocks),
         (star_guests[&UNICORN].clone(), f32::INFINITY),
-        (star_guests[&GHOST].clone(), f32::INFINITY)
+        (star_guests[&GHOST].clone(), f32::INFINITY),
     ];
-    println!("Select desired Party Scenerio:\n");
+    print!("Select desired Party Scenerio:\n\n");
     print!("1 -> Alien Invitation");
     for i in 0..alien_invitation.len() {
         print!("{} ", alien_invitation[i].0.emoji);
     }
-    println!("\n");
+    print!("\n\n");
     print!("2 -> High Or Low");
     for i in 0..high_or_low.len() {
         print!("{} ", high_or_low[i].0.emoji);
     }
-    println!("\n");
+    print!("\n\n");
     print!("3 -> Best Wishes");
     for i in 0..best_wishes.len() {
         print!("{} ", best_wishes[i].0.emoji);
     }
-    println!("\n");
+    print!("\n\n");
     print!("4 -> Money Management");
     for i in 0..money_management.len() {
         print!("{} ", money_management[i].0.emoji);
     }
-    println!("\n");
+    print!("\n\n");
     print!("5 -> A Magical Night");
     for i in 0..a_magical_night.len() {
         print!("{} ", a_magical_night[i].0.emoji);
     }
-    println!("\n");
-    println!("6 -> Randomized Scenerios\n");
+    print!("\n\n");
+    print!("6 -> Randomized Scenerios\n");
     loop {
         let mut input = String::new();
-        if let Err(e) = io::stdin().read_line(&mut input) {
+        if let Err(e) = stdin().read_line(&mut input) {
             eprintln!("Error reading input: {}", e);
             continue;
         }
@@ -200,23 +207,23 @@ pub fn init_scenerio(num_players: usize) -> Store {
             Ok(num) if num == 1 => {
                 store.extend(alien_invitation);
                 break;
-            },
+            }
             Ok(num) if num == 2 => {
                 store.extend(high_or_low);
                 break;
-            },
+            }
             Ok(num) if num == 3 => {
                 store.extend(best_wishes);
-                break
-            },
+                break;
+            }
             Ok(num) if num == 4 => {
                 store.extend(money_management);
-                break
-            },
+                break;
+            }
             Ok(num) if num == 5 => {
                 store.extend(a_magical_night);
-                break
-            },
+                break;
+            }
             Ok(num) if num == 6 => {
                 let flip: f64 = thread_rng().gen();
                 let (randos_num, star_guests_num) = if flip < 0.5 { (11, 2) } else { (12, 1) };
@@ -237,15 +244,16 @@ pub fn init_scenerio(num_players: usize) -> Store {
                     store.extend(vec![(star_guests[&guest].clone(), f32::INFINITY)]);
                 }
                 break;
-            },
+            }
             Ok(_) => eprintln!("Invalid input. Please enter a valid number as displayed."),
             Err(_) => eprintln!("Invalid input. Please enter a valid number as displayed."),
         }
     }
     clear().unwrap();
+    store.sort_by(|a, b| a.0.cost.cmp(&b.0.cost));
     Store {
         stock: store,
-        still_shopping: true
+        still_shopping: true,
     }
 }
 
@@ -257,8 +265,8 @@ pub struct Party {
     pub chill_count: u8,
     pub narcs: bool,
     pub overflow: bool,
-    pub star_guest_arrivals_for_win: usize
-    pub still_partying: bool
+    pub star_guest_arrivals_for_win: usize,
+    pub still_partying: bool,
 }
 pub fn init_party(cap: &ClampedI8, star_guest_arrivals_for_win: usize) -> Party {
     Party {
@@ -269,6 +277,6 @@ pub fn init_party(cap: &ClampedI8, star_guest_arrivals_for_win: usize) -> Party 
         narcs: false,
         overflow: false,
         star_guest_arrivals_for_win,
-        still_partying: true
+        still_partying: true,
     }
 }
