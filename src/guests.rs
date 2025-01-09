@@ -1,3 +1,4 @@
+
 use std::collections::HashMap;
 
 #[derive(Default, Debug, Clone)]
@@ -23,6 +24,7 @@ pub struct Guest {
     pub quenches: u8,
     pub pop_ups: u8,
     pub arrived_already_today: bool,
+    pub active_ability: bool
 }
 
 #[allow(non_camel_case_types)]
