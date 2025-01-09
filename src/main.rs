@@ -3,7 +3,6 @@ mod clampedi8;
 mod guests;
 mod init;
 mod party;
-mod bonuses;
 mod store;
 use clearscreen::clear;
 use {init::*, party::*, store::*};

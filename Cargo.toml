@@ -8,3 +8,4 @@ card_deck = "*"
 clap = { version = "*", features = ["derive"] }
 rand = "*"
 clearscreen = "*"
+better_default = "*"

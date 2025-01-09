@@ -1,5 +1,5 @@
 use clearscreen::clear;
-use crate::{bonuses::*, guests::GuestType, init::*};
+use crate::{guests::*, init::*};
 
 impl Player {
     fn add_pop_from_guest(&mut self, amount: i8) {
@@ -13,24 +13,17 @@ impl Player {
         }
         self.cash += amount;
     }
-    fn add_bonus_from_guest(&mut self, party: &Party, guesttype: &GuestType) {
-        match guesttype {
-            GuestType::COMEDIAN => self.add_pop_from_guest(comedian_bonus(party)),
-            GuestType::INTROVERT => self.add_pop_from_guest(introvert_bonus(party)),
-            GuestType::DANCER => self.add_pop_from_guest(dancer_bonus(party)),
-            GuestType::MASCOT => self.add_pop_from_guest(mascot_bonus(party)),
-            GuestType::WRITER => self.add_pop_from_guest(writer_bonus(party)),
-            GuestType::BARTENDER => self.add_cash_from_guest(bartender_bonus(party)),
-            _ => {}
-        }
+    fn add_bonus_from_guest(&mut self, party: &Party, guest: &Guest) {
+        self.add_pop_from_guest((guest.bonus_pop)(&party));
+        self.add_cash_from_guest((guest.bonus_cash)(&party));
     }
 }
 
-fn score_guest(party: &mut Party, player: &mut Player) {
+fn photograph_guest(party: &Party, player: &mut Player) {
     let scored_guest = &party.attendees[party.attendees.len() - 1];
     player.add_pop_from_guest(scored_guest.popularity);
     player.add_cash_from_guest(scored_guest.cash);
-    player.add_bonus_from_guest(party, &scored_guest.guest)
+    player.add_bonus_from_guest(party, scored_guest);
 }
 
 pub fn do_partying(party: &mut Party, player: &mut Player, victories: &mut Vec<bool>) -> bool {
@@ -45,5 +38,6 @@ pub fn do_partying(party: &mut Party, player: &mut Player, victories: &mut Vec<b
         println!("Last Chance!\n");
     }
     clear().unwrap();
+
     still_partying
 }
