@@ -39,3 +39,12 @@ impl From<(i8, i8, i8)> for ClampedI8 {
         }
     }
 }
+
+impl ClampedI8 {
+    pub fn pop_cash(value: i8) -> Self {
+        ClampedI8::from((value, -9, 9))
+    }
+    pub fn stars(value: i8) -> Self {
+        ClampedI8::from((value, -1, 1))
+    }
+}
