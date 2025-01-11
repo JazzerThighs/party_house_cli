@@ -10,12 +10,11 @@ pub fn cost_of_expansion(capacity: i8) -> i8 {
     }
 }
 
-pub fn do_shopping(store: &mut Store, player: &mut Player) -> bool {
-    if !store.still_shopping { return false; }
+pub fn do_shopping(store: &mut Store, player: &mut Player) {
+    if !store.still_shopping { return }
     println!("Player {}, spend Pop to add guests to your rolodex; Spend Cash to expand the capacity of your house:\n", player.id + 1);
     
     
     
     clear().unwrap();
-    store.still_shopping
 }

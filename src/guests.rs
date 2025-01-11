@@ -5,6 +5,7 @@ use std::{cmp::max, collections::HashMap};
 #[derive(Default, Debug, Clone)]
 pub struct Guest {
     pub id: usize,
+    pub sort_value: u8,
     pub guest: GuestType,
     pub emoji: char,
     pub cost: u8,
@@ -14,9 +15,9 @@ pub struct Guest {
     pub chill: bool,
     pub stars: i8,
     pub tagalongs: u8,
-    #[default(|_| 0)]
+    #[default(|_| 0)] 
     pub bonus_pop: fn(&Party) -> i8,
-    #[default(|_| 0)]
+    #[default(|_| 0)] 
     pub bonus_cash: fn(&Party) -> i8,
     pub arrived_already_today: bool,
     pub ability_type: AbilityType,
@@ -123,6 +124,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         friends,
         OLD_FRIEND,
+        sort_value: 0,
         emoji: '🙂',
         cost: 2,
         popularity: 1
@@ -130,6 +132,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         friends,
         RICH_PAL,
+        sort_value: 1,
         emoji: '🤑',
         cost: 3,
         cash: 1,
@@ -137,6 +140,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         friends,
         WILD_BUDDY,
+        sort_value: 2,
         emoji: '🤮',
         popularity: 2,
         trouble: true,
@@ -144,6 +148,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         DRIVER,
+        sort_value: 30,
         emoji: '🚗',
         cost: 3,
         ability_type: Summoning,
@@ -152,6 +157,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         MONKEY,
+        sort_value: 31,
         emoji: '🐒',
         cost: 3,
         popularity: 4,
@@ -160,6 +166,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         SECURITY,
+        sort_value: 40,
         emoji: '👮',
         cost: 4,
         ability_type: Boot,
@@ -168,6 +175,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         TICKET_TKR,
+        sort_value: 41,
         emoji: '🎫',
         cost: 4,
         popularity: -1,
@@ -176,6 +184,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         WATCH_DOG,
+        sort_value: 42,
         emoji: '🦮',
         cost: 4,
         popularity: 2,
@@ -185,6 +194,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         HIPPY,
+        sort_value: 43,
         emoji: '✌',
         cost: 4,
         popularity: 1,
@@ -193,6 +203,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         ROCK_STAR,
+        sort_value: 50,
         emoji: '🎸',
         cost: 5,
         popularity: 3,
@@ -202,6 +213,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         COMEDIAN,
+        sort_value: 51,
         emoji: '🤣',
         cost: 5,
         cash: -1,
@@ -210,6 +222,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         PRIVATE_I,
+        sort_value: 44,
         emoji: '🕵',
         cost: 4,
         popularity: 2,
@@ -220,6 +233,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         INTROVERT,
+        sort_value: 45,
         emoji: '😶',
         cost: 4,
         popularity: 1,
@@ -228,6 +242,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         GRILLMASTR,
+        sort_value: 52,
         emoji: '🍔',
         cost: 5,
         popularity: 2,
@@ -237,6 +252,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         MR_POPULAR,
+        sort_value: 53,
         emoji: '😎',
         cost: 5,
         popularity: 3,
@@ -245,6 +261,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         DANCER,
+        sort_value: 70,
         emoji: '💃',
         cost: 7,
         bonus_pop: |party| max(16, party.attendees.iter().filter(|guest| guest.guest == GuestType::DANCER).count().pow(2) as i8),
@@ -252,6 +269,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         AUCTIONEER,
+        sort_value: 90,
         emoji: '🤠',
         cost: 9,
         cash: 3,
@@ -259,6 +277,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         MASCOT,
+        sort_value: 54,
         emoji: '😸',
         cost: 5,
         popularity: 1,
@@ -267,6 +286,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         WRESTLER,
+        sort_value: 91,
         emoji: '👊',
         cost: 9,
         popularity: 2,
@@ -276,6 +296,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         GANGSTER,
+        sort_value: 61,
         emoji: '🔫',
         cost: 6,
         cash: 4,
@@ -284,6 +305,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         CUTE_DOG,
+        sort_value: 71,
         emoji: '🐶',
         cost: 7,
         popularity: 2,
@@ -292,6 +314,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         GAMBLER,
+        sort_value: 72,
         emoji: '🎰',
         cost: 7,
         popularity: 2,
@@ -301,6 +324,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         SPY,
+        sort_value: 80,
         emoji: '🍸',
         cost: 8,
         cash: 2,
@@ -310,6 +334,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         WRITER,
+        sort_value: 81,
         emoji: '🖋',
         cost: 8,
         popularity: 1,
@@ -318,6 +343,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         PHOTOGRPHR,
+        sort_value: 55,
         emoji: '📷',
         cost: 5,
         popularity: 1,
@@ -328,6 +354,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         CHEERLEADR,
+        sort_value: 56,
         emoji: '🎉',
         cost: 5,
         popularity: 1,
@@ -337,6 +364,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         COUNSELOR,
+        sort_value: 73,
         emoji: '📋',
         cost: 7,
         ability_type: Quench,
@@ -345,6 +373,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         ATHLETE,
+        sort_value: 62,
         emoji: '⚽',
         cost: 6,
         popularity: 1,
@@ -355,6 +384,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         CATERER,
+        sort_value: 57,
         emoji: '🍣',
         cost: 5,
         popularity: 4,
@@ -363,6 +393,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         BARTENDER,
+        sort_value: 110,
         emoji: '🍺',
         cost: 11,
         popularity: 1,
@@ -371,6 +402,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         CELEBRITY,
+        sort_value: 111,
         emoji: '👸',
         cost: 11,
         popularity: 3,
@@ -379,6 +411,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         CUPID,
+        sort_value: 82,
         emoji: '💘',
         cost: 8,
         popularity: 1,
@@ -388,6 +421,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         MAGICIAN,
+        sort_value: 58,
         emoji: '🧙',
         cost: 5,
         popularity: 1,
@@ -397,6 +431,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         GREETER,
+        sort_value: 59,
         emoji: '🤵',
         cost: 5,
         popularity: 1,
@@ -406,12 +441,14 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         CLIMBER,
+        sort_value: 120,
         emoji: '🤳',
         cost: 12,
     );
     insert_guest!(
         randos,
         STYLIST,
+        sort_value: 74,
         emoji: '✂',
         cost: 7,
         cash: -1,
@@ -421,6 +458,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         randos,
         WAREWOLF,
+        sort_value: 60,
         emoji: '🐺',
         cost: 5,
         popularity: 4,
@@ -429,6 +467,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         star_guests,
         ALIEN,
+        sort_value: 200,
         emoji: '👽',
         cost: 40,
         stars: 1,
@@ -436,6 +475,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         star_guests,
         MERMAID,
+        sort_value: 201,
         emoji: '🧜',
         cost: 35,
         stars: 1,
@@ -443,6 +483,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         star_guests,
         SUPERHERO,
+        sort_value: 202,
         emoji: '🦸',
         cost: 50,
         popularity: 3,
@@ -451,6 +492,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         star_guests,
         DINOSAUR,
+        sort_value: 203,
         emoji: '🦖',
         cost: 25,
         trouble: true,
@@ -459,6 +501,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         star_guests,
         GENIE,
+        sort_value: 204,
         emoji: '🧞',
         cost: 55,
         stars: 1,
@@ -468,6 +511,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         star_guests,
         DRAGON,
+        sort_value: 205,
         emoji: '🐲',
         cost: 30,
         cash: -3,
@@ -476,6 +520,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         star_guests,
         LEPRECHAUN,
+        sort_value: 206,
         emoji: '🍀',
         cost: 50,
         cash: 3,
@@ -484,6 +529,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         star_guests,
         UNICORN,
+        sort_value: 207,
         emoji: '🦄',
         cost: 45,
         chill: true,
@@ -492,6 +538,7 @@ pub fn guest_lists() -> (
     insert_guest!(
         star_guests,
         GHOST,
+        sort_value: 208,
         emoji: '👻',
         cost: 45,
         stars: 1,

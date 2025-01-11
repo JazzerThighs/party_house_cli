@@ -1,5 +1,4 @@
 use crate::{clampedi8::ClampedI8, guests::*};
-use card_deck::Deck;
 use clearscreen::*;
 use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::{cmp::max, io::stdin};
@@ -32,7 +31,8 @@ pub fn get_num_players() -> usize {
 
 #[derive(Debug, Clone)]
 pub struct Player {
-    pub rolodex: Deck<crate::guests::Guest>,
+    pub rolodex: Vec<Guest>,
+    pub banned: Vec<Guest>,
     pub popularity: ClampedI8,
     pub cash: ClampedI8,
     pub capacity: ClampedI8,
@@ -53,11 +53,12 @@ pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
         for i in 0..rolodex.len() {
             rolodex[i].id = i;
         }
-        Deck::new(rolodex)
+        rolodex
     };
     for i in 0..num_players {
         players.push(Player {
             rolodex: rolodex.clone(),
+            banned: vec![],
             popularity: ClampedI8 {
                 value: 0,
                 min: 0,
@@ -266,7 +267,6 @@ pub struct Party {
     pub narcs: bool,
     pub overflow: bool,
     pub star_guest_arrivals_for_win: usize,
-    pub still_partying: bool,
 }
 pub fn init_party(cap: &ClampedI8, star_guest_arrivals_for_win: usize) -> Party {
     Party {
@@ -277,6 +277,5 @@ pub fn init_party(cap: &ClampedI8, star_guest_arrivals_for_win: usize) -> Party 
         narcs: false,
         overflow: false,
         star_guest_arrivals_for_win,
-        still_partying: true,
     }
 }
