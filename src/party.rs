@@ -17,8 +17,8 @@ impl Player {
     }
     fn greet_guest(&mut self, party: &Party) {
         let scored_guest = &party.attendees[party.attendees.len() - 1];
-        self.add_pop_from_guest(scored_guest.popularity);
-        self.add_cash_from_guest(scored_guest.cash);
+        self.add_pop_from_guest(*scored_guest.popularity);
+        self.add_cash_from_guest(*scored_guest.cash);
         self.add_pop_from_guest((scored_guest.bonus_pop)(&party));
         self.add_cash_from_guest((scored_guest.bonus_cash)(&party));
     }
@@ -27,32 +27,32 @@ impl Player {
             party
                 .attendees
                 .iter()
-                .filter(|a| a.popularity >= 0)
-                .map(|a| a.popularity)
+                .filter(|a| *a.popularity >= 0)
+                .map(|a| *a.popularity)
                 .sum(),
         );
         self.add_pop_from_guest(
             party
                 .attendees
                 .iter()
-                .filter(|a| a.popularity < 0)
-                .map(|a| a.popularity)
+                .filter(|a| *a.popularity < 0)
+                .map(|a| *a.popularity)
                 .sum(),
         );
         self.add_cash_from_guest(
             party
                 .attendees
                 .iter()
-                .filter(|a| a.cash >= 0)
-                .map(|a| a.cash)
+                .filter(|a| *a.cash >= 0)
+                .map(|a| *a.cash)
                 .sum(),
         );
         self.add_cash_from_guest(
             party
                 .attendees
                 .iter()
-                .filter(|a| a.cash < 0)
-                .map(|a| a.cash)
+                .filter(|a| *a.cash < 0)
+                .map(|a| *a.cash)
                 .sum(),
         );
         self.add_pop_from_guest(

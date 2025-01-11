@@ -1,4 +1,4 @@
-use crate::Party;
+use crate::{clampedi8::ClampedI8, Party};
 use better_default::Default;
 use std::{cmp::max, collections::HashMap};
 
@@ -9,11 +9,14 @@ pub struct Guest {
     pub guest: GuestType,
     pub emoji: char,
     pub cost: u8,
-    pub popularity: i8,
-    pub cash: i8,
+    #[default(ClampedI8::from((0, -9, 9)))]
+    pub popularity: ClampedI8,
+    #[default(ClampedI8::from((0, -9, 9)))]
+    pub cash: ClampedI8,
     pub trouble: bool,
     pub chill: bool,
-    pub stars: i8,
+    #[default(ClampedI8::from((0, -1, 1)))]
+    pub stars: ClampedI8,
     pub tagalongs: u8,
     #[default(|_| 0)] 
     pub bonus_pop: fn(&Party) -> i8,
@@ -121,13 +124,14 @@ pub fn guest_lists() -> (
             );
         };
     }
+    
     insert_guest!(
         friends,
         OLD_FRIEND,
         sort_value: 0,
         emoji: '🙂',
         cost: 2,
-        popularity: 1
+        popularity: ClampedI8::from((1, -9, 9))
     );
     insert_guest!(
         friends,
@@ -135,14 +139,14 @@ pub fn guest_lists() -> (
         sort_value: 1,
         emoji: '🤑',
         cost: 3,
-        cash: 1,
+        cash: ClampedI8::from((1, -9, 9)),
     );
     insert_guest!(
         friends,
         WILD_BUDDY,
         sort_value: 2,
         emoji: '🤮',
-        popularity: 2,
+        popularity: ClampedI8::from((2, -9, 9)),
         trouble: true,
     );
     insert_guest!(
@@ -160,7 +164,7 @@ pub fn guest_lists() -> (
         sort_value: 31,
         emoji: '🐒',
         cost: 3,
-        popularity: 4,
+        popularity: ClampedI8::from((4, -9, 9)),
         trouble: true,
     );
     insert_guest!(
@@ -178,8 +182,8 @@ pub fn guest_lists() -> (
         sort_value: 41,
         emoji: '🎫',
         cost: 4,
-        popularity: -1,
-        cash: 2,
+        popularity: ClampedI8::from((-1, -9, 9)),
+        cash: ClampedI8::from((2, -9, 9)),
     );
     insert_guest!(
         randos,
@@ -187,7 +191,7 @@ pub fn guest_lists() -> (
         sort_value: 42,
         emoji: '🦮',
         cost: 4,
-        popularity: 2,
+        popularity: ClampedI8::from((2, -9, 9)),
         ability_type: Peek,
         ability_base: 1,
     );
@@ -197,7 +201,7 @@ pub fn guest_lists() -> (
         sort_value: 43,
         emoji: '✌',
         cost: 4,
-        popularity: 1,
+        popularity: ClampedI8::from((2, -9, 9)),
         chill: true,
     );
     insert_guest!(
@@ -206,8 +210,8 @@ pub fn guest_lists() -> (
         sort_value: 50,
         emoji: '🎸',
         cost: 5,
-        popularity: 3,
-        cash: 2,
+        popularity: ClampedI8::from((3, -9, 9)),
+        cash: ClampedI8::from((2, -9, 9)),
         trouble: true,
     );
     insert_guest!(
@@ -216,7 +220,7 @@ pub fn guest_lists() -> (
         sort_value: 51,
         emoji: '🤣',
         cost: 5,
-        cash: -1,
+        cash: ClampedI8::from((-1, -9, 9)),
         bonus_pop: |party| if party.attendees.len() as i8 == *party.capacity { 5 } else { 0 },
     );
     insert_guest!(
@@ -225,8 +229,8 @@ pub fn guest_lists() -> (
         sort_value: 44,
         emoji: '🕵',
         cost: 4,
-        popularity: 2,
-        cash: -1,
+        popularity: ClampedI8::from((2, -9, 9)),
+        cash: ClampedI8::from((-1, -9, 9)),
         ability_type: Peek,
         ability_base: 1,
     );
@@ -236,7 +240,7 @@ pub fn guest_lists() -> (
         sort_value: 45,
         emoji: '😶',
         cost: 4,
-        popularity: 1,
+        popularity: ClampedI8::from((1, -9, 9)),
         bonus_pop: |party| max(0, *party.capacity - party.attendees.len() as i8),
     );
     insert_guest!(
@@ -245,7 +249,7 @@ pub fn guest_lists() -> (
         sort_value: 52,
         emoji: '🍔',
         cost: 5,
-        popularity: 2,
+        popularity: ClampedI8::from((2, -9, 9)),
         ability_type: Evac,
         ability_base: 1,
     );
@@ -255,7 +259,7 @@ pub fn guest_lists() -> (
         sort_value: 53,
         emoji: '😎',
         cost: 5,
-        popularity: 3,
+        popularity: ClampedI8::from((3, -9, 9)),
         tagalongs: 1,
     );
     insert_guest!(
@@ -271,7 +275,7 @@ pub fn guest_lists() -> (
         sort_value: 90,
         emoji: '🤠',
         cost: 9,
-        cash: 3,
+        cash: ClampedI8::from((3, -9, 9)),
     );
     insert_guest!(
         randos,
@@ -279,7 +283,7 @@ pub fn guest_lists() -> (
         sort_value: 54,
         emoji: '😸',
         cost: 5,
-        popularity: 1,
+        popularity: ClampedI8::from((1, -9, 9)),
         bonus_pop: |party| party.attendees.iter().filter(|guest| guest.guest == GuestType::OLD_FRIEND).count() as i8,
     );
     insert_guest!(
@@ -288,7 +292,7 @@ pub fn guest_lists() -> (
         sort_value: 91,
         emoji: '👊',
         cost: 9,
-        popularity: 2,
+        popularity: ClampedI8::from((2, -9, 9)),
         ability_type: Boot,
         ability_base: 1,
     );
@@ -298,7 +302,7 @@ pub fn guest_lists() -> (
         sort_value: 61,
         emoji: '🔫',
         cost: 6,
-        cash: 4,
+        cash: ClampedI8::from((4, -9, 9)),
         trouble: true,
     );
     insert_guest!(
@@ -307,7 +311,7 @@ pub fn guest_lists() -> (
         sort_value: 71,
         emoji: '🐶',
         cost: 7,
-        popularity: 2,
+        popularity: ClampedI8::from((2, -9, 9)),
         chill: true,
     );
     insert_guest!(
@@ -316,8 +320,8 @@ pub fn guest_lists() -> (
         sort_value: 72,
         emoji: '🎰',
         cost: 7,
-        popularity: 2,
-        cash: 3,
+        popularity: ClampedI8::from((2, -9, 9)),
+        cash: ClampedI8::from((3, -9, 9)),
         trouble: true,
     );
     insert_guest!(
@@ -326,7 +330,7 @@ pub fn guest_lists() -> (
         sort_value: 80,
         emoji: '🍸',
         cost: 8,
-        cash: 2,
+        cash: ClampedI8::from((2, -9, 9)),
         ability_type: Peek,
         ability_base: 1,
     );
@@ -336,7 +340,7 @@ pub fn guest_lists() -> (
         sort_value: 81,
         emoji: '🖋',
         cost: 8,
-        popularity: 1,
+        popularity: ClampedI8::from((1, -9, 9)),
         bonus_pop: |party| 2 * party.attendees.iter().filter(|guest| guest.trouble).count() as i8,
     );
     insert_guest!(
@@ -345,8 +349,8 @@ pub fn guest_lists() -> (
         sort_value: 55,
         emoji: '📷',
         cost: 5,
-        popularity: 1,
-        cash: -1,
+        popularity: ClampedI8::from((1, -9, 9)),
+        cash: ClampedI8::from((-1, -9, 9)),
         ability_type: Shutter,
         ability_base: 1,
     );
@@ -356,7 +360,7 @@ pub fn guest_lists() -> (
         sort_value: 56,
         emoji: '🎉',
         cost: 5,
-        popularity: 1,
+        popularity: ClampedI8::from((1, -9, 9)),
         ability_type: Cheer,
         ability_base: 1,
     );
@@ -375,8 +379,8 @@ pub fn guest_lists() -> (
         sort_value: 62,
         emoji: '⚽',
         cost: 6,
-        popularity: 1,
-        cash: 1,
+        popularity: ClampedI8::from((1, -9, 9)),
+        cash: ClampedI8::from((1, -9, 9)),
         ability_type: Evac,
         ability_base: 1,
     );
@@ -386,8 +390,8 @@ pub fn guest_lists() -> (
         sort_value: 57,
         emoji: '🍣',
         cost: 5,
-        popularity: 4,
-        cash: -1,
+        popularity: ClampedI8::from((4, -9, 9)),
+        cash: ClampedI8::from((-1, -9, 9)),
     );
     insert_guest!(
         randos,
@@ -395,7 +399,7 @@ pub fn guest_lists() -> (
         sort_value: 110,
         emoji: '🍺',
         cost: 11,
-        popularity: 1,
+        popularity: ClampedI8::from((1, -9, 9)),
         bonus_cash: |party| 2 * party.attendees.iter().filter(|guest| guest.trouble).count() as i8,
     );
     insert_guest!(
@@ -404,7 +408,8 @@ pub fn guest_lists() -> (
         sort_value: 111,
         emoji: '👸',
         cost: 11,
-        popularity: 3,
+        popularity: ClampedI8::from((2, -9, 9)),
+        cash: ClampedI8::from((3, -9, 9)),
         tagalongs: 2,
     );
     insert_guest!(
@@ -413,7 +418,7 @@ pub fn guest_lists() -> (
         sort_value: 82,
         emoji: '💘',
         cost: 8,
-        popularity: 1,
+        popularity: ClampedI8::from((1, -9, 9)),
         ability_type: LoveArrow,
         ability_base: 1,
     );
@@ -423,7 +428,7 @@ pub fn guest_lists() -> (
         sort_value: 58,
         emoji: '🧙',
         cost: 5,
-        popularity: 1,
+        popularity: ClampedI8::from((1, -9, 9)),
         ability_type: StarSwap,
         ability_base: 1,
     );
@@ -433,7 +438,7 @@ pub fn guest_lists() -> (
         sort_value: 59,
         emoji: '🤵',
         cost: 5,
-        popularity: 1,
+        popularity: ClampedI8::from((1, -9, 9)),
         ability_type: Greet,
         ability_base: 1,
     );
@@ -450,7 +455,7 @@ pub fn guest_lists() -> (
         sort_value: 74,
         emoji: '✂',
         cost: 7,
-        cash: -1,
+        cash: ClampedI8::from((-1, -9, 9)),
         ability_type: Style,
         ability_base: 1,
     );
@@ -460,7 +465,7 @@ pub fn guest_lists() -> (
         sort_value: 60,
         emoji: '🐺',
         cost: 5,
-        popularity: 4,
+        popularity: ClampedI8::from((4, -9, 9)),
         trouble: true,
     );
     insert_guest!(
@@ -469,7 +474,7 @@ pub fn guest_lists() -> (
         sort_value: 200,
         emoji: '👽',
         cost: 40,
-        stars: 1,
+        stars: ClampedI8::from((1, -1, 1)),
     );
     insert_guest!(
         star_guests,
@@ -477,7 +482,7 @@ pub fn guest_lists() -> (
         sort_value: 201,
         emoji: '🧜',
         cost: 35,
-        stars: 1,
+        stars: ClampedI8::from((1, -1, 1)),
     );
     insert_guest!(
         star_guests,
@@ -485,8 +490,8 @@ pub fn guest_lists() -> (
         sort_value: 202,
         emoji: '🦸',
         cost: 50,
-        popularity: 3,
-        stars: 1,
+        popularity: ClampedI8::from((3, -9, 9)),
+        stars: ClampedI8::from((1, -1, 1)),
     );
     insert_guest!(
         star_guests,
@@ -495,7 +500,7 @@ pub fn guest_lists() -> (
         emoji: '🦖',
         cost: 25,
         trouble: true,
-        stars: 1,
+        stars: ClampedI8::from((1, -1, 1)),
     );
     insert_guest!(
         star_guests,
@@ -503,7 +508,7 @@ pub fn guest_lists() -> (
         sort_value: 204,
         emoji: '🧞',
         cost: 55,
-        stars: 1,
+        stars: ClampedI8::from((1, -1, 1)),
         ability_type: Summoning,
         ability_base: 1,
     );
@@ -513,8 +518,8 @@ pub fn guest_lists() -> (
         sort_value: 205,
         emoji: '🐲',
         cost: 30,
-        cash: -3,
-        stars: 1,
+        cash: ClampedI8::from((-3, -9, 9)),
+        stars: ClampedI8::from((1, -1, 1)),
     );
     insert_guest!(
         star_guests,
@@ -522,8 +527,8 @@ pub fn guest_lists() -> (
         sort_value: 206,
         emoji: '🍀',
         cost: 50,
-        cash: 3,
-        stars: 1,
+        cash: ClampedI8::from((3, -9, 9)),
+        stars: ClampedI8::from((1, -1, 1)),
     );
     insert_guest!(
         star_guests,
@@ -532,7 +537,7 @@ pub fn guest_lists() -> (
         emoji: '🦄',
         cost: 45,
         chill: true,
-        stars: 1,
+        stars: ClampedI8::from((1, -1, 1)),
     );
     insert_guest!(
         star_guests,
@@ -540,7 +545,7 @@ pub fn guest_lists() -> (
         sort_value: 208,
         emoji: '👻',
         cost: 45,
-        stars: 1,
+        stars: ClampedI8::from((1, -1, 1)),
         ability_type: Boot,
         ability_base: 1,
     );

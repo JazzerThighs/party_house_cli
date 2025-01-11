@@ -29,3 +29,13 @@ impl Deref for ClampedI8 {
         &self.value
     }
 }
+
+impl From<(i8, i8, i8)> for ClampedI8 {
+    fn from(tuple: (i8, i8, i8)) -> Self {
+        ClampedI8 {
+            value: tuple.1,
+            min: tuple.1,
+            max: tuple.2
+        }
+    }
+}
