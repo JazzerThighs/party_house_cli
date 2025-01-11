@@ -264,7 +264,6 @@ pub fn guest_lists() -> (
         sort_value: 70,
         emoji: '💃',
         cost: 7,
-        bonus_pop: |party| max(16, party.attendees.iter().filter(|guest| guest.guest == GuestType::DANCER).count().pow(2) as i8),
     );
     insert_guest!(
         randos,

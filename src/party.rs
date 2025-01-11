@@ -1,5 +1,5 @@
-use std::io::stdin;
-use crate::init::*;
+use std::{cmp::min, io::stdin};
+use crate::{guests::*, init::*};
 use clearscreen::clear;
 use rand::{seq::SliceRandom, thread_rng};
 
@@ -60,8 +60,13 @@ impl Player {
                 .attendees
                 .iter()
                 .filter(|a| (a.bonus_pop)(&party) >= 0)
+                .filter(|a| a.guest != GuestType::DANCER)
                 .map(|a| (a.bonus_pop)(&party))
                 .sum(),
+        );
+        // Dancer Bonus seperated from other bonuses to eliminate duplicate bonuses
+        self.add_pop_from_guest(
+            min(16, party.attendees.iter().filter(|a| a.guest == GuestType::DANCER).count().pow(2) as i8)
         );
         self.add_pop_from_guest(
             party
