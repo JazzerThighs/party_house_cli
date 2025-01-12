@@ -9,3 +9,4 @@ clap = { version = "*", features = ["derive"] }
 rand = "*"
 clearscreen = "*"
 better_default = "*"
+nestify = "*"
