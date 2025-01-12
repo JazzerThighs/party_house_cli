@@ -1,5 +1,6 @@
 use crate::{clampedi8::ClampedI8, guests::*};
 use clearscreen::*;
+use better_default::Default;
 use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::{cmp::max, io::stdin};
 
@@ -29,12 +30,15 @@ pub fn get_num_players() -> usize {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct Player {
     pub rolodex: Vec<Guest>,
     pub banned: Vec<Guest>,
+    #[default(ClampedI8::from((0, 0, 65)))]
     pub popularity: ClampedI8,
+    #[default(ClampedI8::from((0, 0, 30)))]
     pub cash: ClampedI8,
+    #[default(ClampedI8::from((5, 5, 34)))]
     pub capacity: ClampedI8,
     pub id: usize,
 }
@@ -227,7 +231,7 @@ pub fn init_scenerio(num_players: usize) -> Store {
             }
             Ok(num) if num == 6 => {
                 let flip: f64 = thread_rng().gen();
-                let (randos_num, star_guests_num) = if flip < 0.5 { (11, 2) } else { (12, 1) };
+                let (randos_num, star_guests_num) = if flip < 0.2 { (11, 2) } else { (12, 1) };
 
                 let mut randos_keys: Vec<GuestType> = randos.keys().cloned().collect();
                 let mut rng = thread_rng();
@@ -251,7 +255,10 @@ pub fn init_scenerio(num_players: usize) -> Store {
         }
     }
     clear().unwrap();
+    
     store.sort_by(|a, b| a.0.cost.cmp(&b.0.cost));
+    store.sort_by(|a, b| a.0.sort_value.cmp(&b.0.sort_value));
+    
     Store {
         stock: store,
         still_shopping: true,
@@ -264,8 +271,6 @@ pub struct Party {
     pub capacity: ClampedI8,
     pub trouble_count: u8,
     pub chill_count: u8,
-    pub narcs: bool,
-    pub overflow: bool,
     pub star_guest_arrivals_for_win: usize,
 }
 pub fn init_party(cap: &ClampedI8, star_guest_arrivals_for_win: usize) -> Party {
@@ -274,8 +279,6 @@ pub fn init_party(cap: &ClampedI8, star_guest_arrivals_for_win: usize) -> Party 
         capacity: cap.clone(),
         trouble_count: 0,
         chill_count: 0,
-        narcs: false,
-        overflow: false,
         star_guest_arrivals_for_win,
     }
 }

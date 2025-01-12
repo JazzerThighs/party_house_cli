@@ -20,13 +20,13 @@ impl Player {
         self.add_pop_from_guest(*scored_guest.popularity);
         self.add_cash_from_guest(*scored_guest.cash);
         self.add_pop_from_guest((scored_guest.bonus_pop)(&party));
-        if scored_guest.guest == GuestType::DANCER {
+        if scored_guest.guest_type == GuestType::DANCER {
             self.add_pop_from_guest(min(
                 16,
                 party
                     .attendees
                     .iter()
-                    .filter(|a| a.guest == GuestType::DANCER)
+                    .filter(|a| a.guest_type == GuestType::DANCER)
                     .count()
                     .pow(2) as i8,
             ))
@@ -71,7 +71,7 @@ impl Player {
                 .attendees
                 .iter()
                 .filter(|a| (a.bonus_pop)(&party) >= 0)
-                .filter(|a| a.guest != GuestType::DANCER)
+                .filter(|a| a.guest_type != GuestType::DANCER)
                 .map(|a| (a.bonus_pop)(&party))
                 .sum(),
         );
@@ -81,7 +81,7 @@ impl Player {
             party
                 .attendees
                 .iter()
-                .filter(|a| a.guest == GuestType::DANCER)
+                .filter(|a| a.guest_type == GuestType::DANCER)
                 .count()
                 .pow(2) as i8,
         ));

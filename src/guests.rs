@@ -1,108 +1,109 @@
 use crate::{clampedi8::ClampedI8, Party};
+use nestify::nest;
 use better_default::Default;
 use std::{cmp::max, collections::HashMap};
 
-#[derive(Default, Debug, Clone)]
-pub struct Guest {
-    pub id: usize,
-    pub sort_value: u8,
-    pub guest: GuestType,
-    pub emoji: char,
-    pub cost: u8,
-    #[default(ClampedI8::pop_cash(0))]
-    pub popularity: ClampedI8,
-    #[default(ClampedI8::pop_cash(0))]
-    pub cash: ClampedI8,
-    pub trouble_base: bool,
-    pub trouble: bool,
-    pub chill: bool,
-    #[default(ClampedI8::stars(0))]
-    pub stars: ClampedI8,
-    pub tagalongs: u8,
-    #[default(|_| 0)] 
-    pub bonus_pop: fn(&Party) -> i8,
-    #[default(|_| 0)] 
-    pub bonus_cash: fn(&Party) -> i8,
-    pub arrived_already_today: bool,
-    pub ability_type: AbilityType,
-    pub ability_base: u8,
-    pub ability_stock: u8,
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Default, Debug, Clone, PartialEq, Eq, Hash)]
-pub enum GuestType {
-    #[default]
-    OLD_FRIEND,
-    RICH_PAL,
-    WILD_BUDDY,
-    DRIVER,
-    MONKEY,
-    SECURITY,
-    TICKET_TKR,
-    WATCH_DOG,
-    HIPPY,
-    ROCK_STAR,
-    COMEDIAN,
-    PRIVATE_I,
-    INTROVERT,
-    GRILLMASTR,
-    MR_POPULAR,
-    DANCER,
-    AUCTIONEER,
-    MASCOT,
-    WRESTLER,
-    GANGSTER,
-    CUTE_DOG,
-    GAMBLER,
-    SPY,
-    WRITER,
-    PHOTOGRPHR,
-    CHEERLEADR,
-    COUNSELOR,
-    ATHLETE,
-    CATERER,
-    BARTENDER,
-    CELEBRITY,
-    CUPID,
-    MAGICIAN,
-    GREETER,
-    CLIMBER,
-    STYLIST,
-    WAREWOLF,
-    ALIEN,
-    MERMAID,
-    SUPERHERO,
-    DINOSAUR,
-    GENIE,
-    DRAGON,
-    LEPRECHAUN,
-    UNICORN,
-    GHOST,
-}
-
-#[derive(Default, Debug, Clone, PartialEq)]
-pub enum AbilityType {
-    #[default]
-    NoAbility,
-
-    // Able to be used when house is full:
-    Boot,
-    LoveArrow,
-    Evac,
-    Shutter,
-    Style,
-    Quench,
-    StarSwap,
-
-    // Able to be used when the house is full and there is at least 1 guest who has a full house ability in the party:
-    Cheer,
-
-    // Not able to be used when house is full:
-    Summoning,
-    Peek,
-    Greet,
-}
+nest!(
+    #[derive(Default, Debug, Clone)]*
+    pub struct Guest {
+        pub id: usize,
+        pub sort_value: u8,
+        #[default('🫥')]
+        pub emoji: char,
+        pub cost: u8,
+        #[default(ClampedI8::pop_cash(0))]
+        pub popularity: ClampedI8,
+        #[default(ClampedI8::pop_cash(0))]
+        pub cash: ClampedI8,
+        pub trouble_base: bool,
+        pub trouble: bool,
+        pub chill: bool,
+        #[default(ClampedI8::stars(0))]
+        pub stars: ClampedI8,
+        pub tagalongs: u8,
+        #[default(|_| 0)] 
+        pub bonus_pop: fn(&Party) -> i8,
+        #[default(|_| 0)] 
+        pub bonus_cash: fn(&Party) -> i8,
+        pub arrived_already_today: bool,
+        #[default(|_| ())]
+        pub entrance_effect: fn(&mut Self),
+        pub ability_base: u8,
+        pub ability_stock: u8,
+        pub ability_type: 
+            #[derive(PartialEq, Eq)]
+            pub enum AbilityType {
+                #[default]
+                NoAbility,
+                // Able to be used when house is full:
+                Boot,
+                LoveArrow,
+                Evac,
+                Shutter,
+                Style,
+                Quench,
+                StarSwap,
+                // Able to be used when the house is full and there is at least 1 guest who has a full house ability in the party:
+                Cheer,
+                // Not able to be used when house is full:
+                Summoning,
+                Peek,
+                Greet,
+            },
+        pub guest_type: 
+            #[allow(non_camel_case_types)]
+            #[derive(PartialEq, Eq, Hash)]
+            pub enum GuestType {
+                #[default]
+                OLD_FRIEND,
+                RICH_PAL,
+                WILD_BUDDY,
+                DRIVER,
+                MONKEY,
+                SECURITY,
+                TICKET_TKR,
+                WATCH_DOG,
+                HIPPY,
+                ROCK_STAR,
+                COMEDIAN,
+                PRIVATE_I,
+                INTROVERT,
+                GRILLMASTR,
+                MR_POPULAR,
+                DANCER,
+                AUCTIONEER,
+                MASCOT,
+                WRESTLER,
+                GANGSTER,
+                CUTE_DOG,
+                GAMBLER,
+                SPY,
+                WRITER,
+                PHOTOGRPHR,
+                CHEERLEADR,
+                COUNSELOR,
+                ATHLETE,
+                CATERER,
+                BARTENDER,
+                CELEBRITY,
+                CUPID,
+                MAGICIAN,
+                GREETER,
+                CLIMBER,
+                STYLIST,
+                WAREWOLF,
+                ALIEN,
+                MERMAID,
+                SUPERHERO,
+                DINOSAUR,
+                GENIE,
+                DRAGON,
+                LEPRECHAUN,
+                UNICORN,
+                GHOST,
+            },
+    }
+);
 
 pub fn guest_lists() -> (
     HashMap<GuestType, Guest>,
@@ -111,6 +112,7 @@ pub fn guest_lists() -> (
 ) {
     let (mut friends, mut randos, mut star_guests) =
         (HashMap::new(), HashMap::new(), HashMap::new());
+    
     use AbilityType::*;
     use GuestType::*;
     macro_rules! insert_guest {
@@ -118,7 +120,7 @@ pub fn guest_lists() -> (
             $map.insert(
                 $guest,
                 Guest {
-                    guest: $guest,
+                    guest_type: $guest,
                     $( $field: $value, )*
                     ..Default::default()
                 }
@@ -126,6 +128,7 @@ pub fn guest_lists() -> (
         };
     }
     
+    // Friends, in every starting rolodex
     insert_guest!(
         friends,
         OLD_FRIEND,
@@ -150,6 +153,8 @@ pub fn guest_lists() -> (
         popularity: ClampedI8::pop_cash(2),
         trouble_base: true,
     );
+    
+    // Randos
     insert_guest!(
         randos,
         DRIVER,
@@ -285,7 +290,7 @@ pub fn guest_lists() -> (
         emoji: '😸',
         cost: 5,
         popularity: ClampedI8::pop_cash(1),
-        bonus_pop: |party| party.attendees.iter().filter(|guest| guest.guest == GuestType::OLD_FRIEND).count() as i8,
+        bonus_pop: |party| party.attendees.iter().filter(|guest| guest.guest_type == GuestType::OLD_FRIEND).count() as i8,
     );
     insert_guest!(
         randos,
@@ -449,6 +454,8 @@ pub fn guest_lists() -> (
         sort_value: 120,
         emoji: '🤳',
         cost: 12,
+        // Popularity increases by 1 time it enters the party, through either the door or by summoning. Can gain more popularity within the span of 1 party if they arrive, are evac'd, and then arrive again.
+        entrance_effect: |&mut self| self.popularity += 1
     );
     insert_guest!(
         randos,
@@ -467,8 +474,11 @@ pub fn guest_lists() -> (
         emoji: '🐺',
         cost: 5,
         popularity: ClampedI8::pop_cash(4),
-        trouble_base: true,
+        // Causes trouble every other time it enters the party, through either the door or by summoning. Can flipflop within the span of 1 party if they arrive, are evac'd, and then arrive again.
+        entrance_effect: |&mut self| self.trouble_base = !self.trouble_base
     );
+    
+    // Star Guests, win condition fulfillers
     insert_guest!(
         star_guests,
         ALIEN,
