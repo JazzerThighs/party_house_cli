@@ -32,6 +32,7 @@ nest!(
         pub ability_base: u8,
         pub ability_stock: u8,
         pub full_house_ability:
+            #[derive(PartialEq, Eq)]
             pub enum FullHouseAbilityCondition {
                 Yes,
                 IfYesIsPresent,
@@ -48,7 +49,7 @@ nest!(
                 LoveArrow,
                 Evac,
                 Shutter,
-                Style,
+                Style(i8),
                 Quench,
                 StarSwap,
                 // Able to be used when the house is full and there is at least 1 guest who has a full house ability in the party:
@@ -475,7 +476,7 @@ pub fn guest_lists() -> (
         emoji: '✂',
         cost: 7,
         cash: ClampedI8::pop_cash(-1),
-        ability_type: Style,
+        ability_type: Style(1),
         ability_base: 1,
     );
     insert_guest!(
