@@ -1,13 +1,15 @@
 use crate::{clampedi8::*, guest::*, player::*};
 use clearscreen::clear;
 use nestify::nest;
+use better_default::Default;
 use rand::{seq::SliceRandom, thread_rng};
 use std::io::stdin;
 
 nest!(
-    #[derive(Debug)]*
+    #[derive(Default, Debug)]*
     pub struct Party {
         pub attendees: Vec<Guest>,
+        #[default(ClampedI8::capacity())]
         pub capacity: ClampedI8,
         pub trouble_count: u8,
         pub chill_count: u8,
@@ -15,6 +17,7 @@ nest!(
         pub party_state:
             #[derive(PartialEq, Eq)]
             pub enum PartyState {
+                #[default]
                 GoingFine,
                 EndedSuccessfully,
                 FullHouseUnusedAbilities,

@@ -47,4 +47,7 @@ impl ClampedI8 {
     pub fn stars(value: i8) -> Self {
         ClampedI8::from((value, -1, 1))
     }
+    pub fn capacity() -> Self {
+        ClampedI8::from((5, 5, 34))
+    } 
 }

@@ -56,19 +56,6 @@ pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
     (players, star_guest_arrivals_for_win)
 }
 
-#[derive(Debug)]
-pub struct Store {
-    pub stock: Vec<(Guest, f32)>,
-    pub still_shopping: bool,
-}
-pub const fn cost_of_expansion(capacity: i8) -> i8 {
-    match capacity {
-        ..=4 => unreachable!(),
-        5..=15 => capacity - 3,
-        16..=34 => 12,
-        35.. => 0
-    }
-}
 const fn get_num_stocks(num_players: usize) -> f32 {
     (4 + (2 * (num_players - 1))) as f32
 }

@@ -16,7 +16,7 @@ nest!(
         pub popularity: ClampedI8,
         #[default(ClampedI8::from((0, 0, 30)))]
         pub cash: ClampedI8,
-        #[default(ClampedI8::from((5, 5, 34)))]
+        #[default(ClampedI8::capacity())]
         pub capacity: ClampedI8,
         pub id: usize,
     }
@@ -28,6 +28,7 @@ impl Player {
             if self.banned.already_served_time {
                 self.rolodex.push(g.clone());
                 self.banned.guest = None;
+                self.banned.already_served_time = true;
             }
         }
         for guest in self.rolodex.iter_mut() {

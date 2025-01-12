@@ -31,6 +31,13 @@ nest!(
         pub entrance_effect: fn(&mut Self),
         pub ability_base: u8,
         pub ability_stock: u8,
+        pub full_house_ability:
+            pub enum FullHouseAbilityCondition {
+                Yes,
+                IfYesIsPresent,
+                #[default]
+                No,
+            },
         pub ability_type: 
             #[derive(PartialEq, Eq)]
             pub enum AbilityType {
@@ -113,7 +120,8 @@ pub fn guest_lists() -> (
 ) {
     let (mut friends, mut randos, mut star_guests) =
         (HashMap::new(), HashMap::new(), HashMap::new());
-    
+
+    use FullHouseAbilityCondition::*;
     use AbilityType::*;
     use GuestType::*;
     macro_rules! insert_guest {
@@ -180,6 +188,7 @@ pub fn guest_lists() -> (
         sort_value: 40,
         emoji: '👮',
         cost: 4,
+        full_house_ability: Yes,
         ability_type: Boot,
         ability_base: 1,
     );
@@ -300,6 +309,7 @@ pub fn guest_lists() -> (
         emoji: '👊',
         cost: 9,
         popularity: ClampedI8::pop_cash(2),
+        full_house_ability: Yes,
         ability_type: Boot,
         ability_base: 1,
     );
@@ -558,6 +568,7 @@ pub fn guest_lists() -> (
         emoji: '👻',
         cost: 45,
         stars: ClampedI8::stars(1),
+        full_house_ability: Yes,
         ability_type: Boot,
         ability_base: 1,
     );
