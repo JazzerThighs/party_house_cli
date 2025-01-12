@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 mod clampedi8;
-mod guests;
+mod guest;
 mod init;
+mod player;
 mod party;
 mod store;
 use clearscreen::clear;

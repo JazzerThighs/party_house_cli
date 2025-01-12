@@ -17,6 +17,7 @@ nest!(
         pub cash: ClampedI8,
         pub trouble_base: bool,
         pub trouble: bool,
+        pub chill_base: bool,
         pub chill: bool,
         #[default(ClampedI8::stars(0))]
         pub stars: ClampedI8,
@@ -208,7 +209,7 @@ pub fn guest_lists() -> (
         emoji: '✌',
         cost: 4,
         popularity: ClampedI8::pop_cash(2),
-        chill: true,
+        chill_base: true,
     );
     insert_guest!(
         randos,
@@ -318,7 +319,7 @@ pub fn guest_lists() -> (
         emoji: '🐶',
         cost: 7,
         popularity: ClampedI8::pop_cash(2),
-        chill: true,
+        chill_base: true,
     );
     insert_guest!(
         randos,
@@ -455,7 +456,7 @@ pub fn guest_lists() -> (
         emoji: '🤳',
         cost: 12,
         // Popularity increases by 1 time it enters the party, through either the door or by summoning. Can gain more popularity within the span of 1 party if they arrive, are evac'd, and then arrive again.
-        entrance_effect: |&mut self| self.popularity += 1
+        entrance_effect: |g| g.popularity += 1
     );
     insert_guest!(
         randos,
@@ -475,7 +476,7 @@ pub fn guest_lists() -> (
         cost: 5,
         popularity: ClampedI8::pop_cash(4),
         // Causes trouble every other time it enters the party, through either the door or by summoning. Can flipflop within the span of 1 party if they arrive, are evac'd, and then arrive again.
-        entrance_effect: |&mut self| self.trouble_base = !self.trouble_base
+        entrance_effect: |g| g.trouble_base = !g.trouble_base
     );
     
     // Star Guests, win condition fulfillers
@@ -547,7 +548,7 @@ pub fn guest_lists() -> (
         sort_value: 207,
         emoji: '🦄',
         cost: 45,
-        chill: true,
+        chill_base: true,
         stars: ClampedI8::stars(1),
     );
     insert_guest!(

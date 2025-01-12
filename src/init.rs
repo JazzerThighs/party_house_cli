@@ -1,6 +1,5 @@
-use crate::{clampedi8::ClampedI8, guests::*};
+use crate::{clampedi8::ClampedI8, guest::*, party::*, player::*};
 use clearscreen::*;
-use better_default::Default;
 use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::{cmp::max, io::stdin};
 
@@ -30,18 +29,6 @@ pub fn get_num_players() -> usize {
     }
 }
 
-#[derive(Default, Debug, Clone)]
-pub struct Player {
-    pub rolodex: Vec<Guest>,
-    pub banned: Vec<Guest>,
-    #[default(ClampedI8::from((0, 0, 65)))]
-    pub popularity: ClampedI8,
-    #[default(ClampedI8::from((0, 0, 30)))]
-    pub cash: ClampedI8,
-    #[default(ClampedI8::from((5, 5, 34)))]
-    pub capacity: ClampedI8,
-    pub id: usize,
-}
 pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
     let mut players = vec![];
     let star_guest_arrivals_for_win: usize = match num_players {
@@ -62,23 +49,8 @@ pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
     for i in 0..num_players {
         players.push(Player {
             rolodex: rolodex.clone(),
-            banned: vec![],
-            popularity: ClampedI8 {
-                value: 0,
-                min: 0,
-                max: 65,
-            },
-            cash: ClampedI8 {
-                value: 0,
-                min: 0,
-                max: 30,
-            },
-            capacity: ClampedI8 {
-                value: 5,
-                min: 5,
-                max: 34,
-            },
             id: i,
+            ..Default::default()
         })
     }
     (players, star_guest_arrivals_for_win)
@@ -88,6 +60,14 @@ pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
 pub struct Store {
     pub stock: Vec<(Guest, f32)>,
     pub still_shopping: bool,
+}
+pub const fn cost_of_expansion(capacity: i8) -> i8 {
+    match capacity {
+        ..=4 => unreachable!(),
+        5..=15 => capacity - 3,
+        16..=34 => 12,
+        35.. => 0
+    }
 }
 const fn get_num_stocks(num_players: usize) -> f32 {
     (4 + (2 * (num_players - 1))) as f32
@@ -265,20 +245,10 @@ pub fn init_scenerio(num_players: usize) -> Store {
     }
 }
 
-#[derive(Debug)]
-pub struct Party {
-    pub attendees: Vec<Guest>,
-    pub capacity: ClampedI8,
-    pub trouble_count: u8,
-    pub chill_count: u8,
-    pub star_guest_arrivals_for_win: usize,
-}
 pub fn init_party(cap: &ClampedI8, star_guest_arrivals_for_win: usize) -> Party {
     Party {
-        attendees: vec![],
         capacity: cap.clone(),
-        trouble_count: 0,
-        chill_count: 0,
         star_guest_arrivals_for_win,
+        ..Default::default()
     }
 }

@@ -1,14 +1,5 @@
 use clearscreen::clear;
-use crate::init::*;
-
-pub fn cost_of_expansion(capacity: i8) -> i8 {
-    match capacity {
-        ..=4 => unreachable!(),
-        5..=15 => capacity - 3,
-        16..=34 => 12,
-        35.. => 0
-    }
-}
+use crate::{init::*, guest::*, clampedi8::*, player::*};
 
 pub fn do_shopping(store: &mut Store, player: &mut Player) {
     if !store.still_shopping { return }
