@@ -1,7 +1,7 @@
-use std::{cmp::min, io::stdin};
 use crate::{guests::*, init::*};
 use clearscreen::clear;
 use rand::{seq::SliceRandom, thread_rng};
+use std::{cmp::min, io::stdin};
 
 impl Player {
     fn add_pop_from_guest(&mut self, amount: i8) {
@@ -20,6 +20,17 @@ impl Player {
         self.add_pop_from_guest(*scored_guest.popularity);
         self.add_cash_from_guest(*scored_guest.cash);
         self.add_pop_from_guest((scored_guest.bonus_pop)(&party));
+        if scored_guest.guest == GuestType::DANCER {
+            self.add_pop_from_guest(min(
+                16,
+                party
+                    .attendees
+                    .iter()
+                    .filter(|a| a.guest == GuestType::DANCER)
+                    .count()
+                    .pow(2) as i8,
+            ))
+        };
         self.add_cash_from_guest((scored_guest.bonus_cash)(&party));
     }
     fn end_of_party_score_guests(&mut self, party: &Party) {
@@ -65,9 +76,15 @@ impl Player {
                 .sum(),
         );
         // Dancer Bonus seperated from other bonuses to eliminate duplicate bonuses
-        self.add_pop_from_guest(
-            min(16, party.attendees.iter().filter(|a| a.guest == GuestType::DANCER).count().pow(2) as i8)
-        );
+        self.add_pop_from_guest(min(
+            16,
+            party
+                .attendees
+                .iter()
+                .filter(|a| a.guest == GuestType::DANCER)
+                .count()
+                .pow(2) as i8,
+        ));
         self.add_pop_from_guest(
             party
                 .attendees
@@ -119,7 +136,8 @@ pub fn do_partying(party: &mut Party, player: &mut Player, victories: &mut Vec<b
         }
 
         match player.rolodex.is_empty() {
-            false => { // Rolodex is not empty
+            false => {
+                // Rolodex is not empty
                 'nonemptyloop: loop {
                     let mut input = String::new();
                     if let Err(e) = stdin().read_line(&mut input) {
@@ -127,32 +145,34 @@ pub fn do_partying(party: &mut Party, player: &mut Player, victories: &mut Vec<b
                         continue 'nonemptyloop;
                     }
                     match input.trim() {
-                        "h" => { // Open Door for New Guest ("h" for "Hit Me")
+                        "h" => {
+                            // Open Door for New Guest ("h" for "Hit Me")
                             party.attendees.push(player.rolodex.pop().unwrap());
-                            if greet_carry { player.greet_guest(party); }
+                            if greet_carry {
+                                player.greet_guest(party);
+                            }
                             tagalong_carry = party.attendees[party.attendees.len() - 1].tagalongs;
                             break 'nonemptyloop;
-                        },
+                        }
                         _ => eprintln!("Invalid input. Please enter a valid input."),
                     }
                 }
-            },
+            }
             true => { // Rolodex is empty
-
             }
         }
         match (
-            party.attendees.len(), 
-            tagalong_carry, 
+            party.attendees.len(),
+            tagalong_carry,
             greet_carry,
-            end_party
+            end_party,
         ) {
             (0, tc, gc, ep) if tc != 0 || gc == true || ep == true => unreachable!(),
             (_, 0, false, true) => {
                 player.end_of_party_score_guests(&party);
                 break 'partyloop;
-            },
-            (_, tc, _, _) if tc > 0 => {},
+            }
+            (_, tc, _, _) if tc > 0 => {}
             (_, _, _, _) => {}
         }
     }

@@ -222,7 +222,7 @@ pub fn guest_lists() -> (
         emoji: '🤣',
         cost: 5,
         cash: ClampedI8::pop_cash(-1),
-        bonus_pop: |party| if party.attendees.len() as i8 == *party.capacity { 5 } else { 0 },
+        bonus_pop: |party| if party.attendees.len() as i8 >= *party.capacity { 5 } else { 0 },
     );
     insert_guest!(
         randos,
