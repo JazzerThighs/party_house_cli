@@ -42,8 +42,10 @@ nest!(
         pub ability_type: 
             #[derive(PartialEq, Eq)]
             pub enum AbilityType {
+                // Determines if an ability is still able to be used when the house is full (or, alternatively, when the player's rolodex is empty.)
                 #[default]
                 NoAbility,
+                
                 // Able to be used when house is full:
                 Boot,
                 LoveArrow,
@@ -52,8 +54,10 @@ nest!(
                 Style(i8),
                 Quench,
                 StarSwap,
+                
                 // Able to be used when the house is full and there is at least 1 guest who has a full house ability in the party:
                 Cheer,
+                
                 // Not able to be used when house is full:
                 Summoning,
                 Peek,
@@ -267,6 +271,7 @@ pub fn guest_lists() -> (
         emoji: '🍔',
         cost: 5,
         popularity: ClampedI8::pop_cash(2),
+        full_house_ability: Yes,
         ability_type: Evac,
         ability_base: 1,
     );
@@ -369,6 +374,7 @@ pub fn guest_lists() -> (
         cost: 5,
         popularity: ClampedI8::pop_cash(1),
         cash: ClampedI8::pop_cash(-1),
+        full_house_ability: Yes,
         ability_type: Shutter,
         ability_base: 1,
     );
@@ -379,6 +385,7 @@ pub fn guest_lists() -> (
         emoji: '🎉',
         cost: 5,
         popularity: ClampedI8::pop_cash(1),
+        full_house_ability: IfYesIsPresent,
         ability_type: Cheer,
         ability_base: 1,
     );
@@ -388,6 +395,7 @@ pub fn guest_lists() -> (
         sort_value: 73,
         emoji: '📋',
         cost: 7,
+        full_house_ability: Yes,
         ability_type: Quench,
         ability_base: 1,
     );
@@ -399,6 +407,7 @@ pub fn guest_lists() -> (
         cost: 6,
         popularity: ClampedI8::pop_cash(1),
         cash: ClampedI8::pop_cash(1),
+        full_house_ability: Yes,
         ability_type: Evac,
         ability_base: 1,
     );
@@ -437,6 +446,7 @@ pub fn guest_lists() -> (
         emoji: '💘',
         cost: 8,
         popularity: ClampedI8::pop_cash(1),
+        full_house_ability: Yes,
         ability_type: LoveArrow,
         ability_base: 1,
     );
@@ -447,6 +457,7 @@ pub fn guest_lists() -> (
         emoji: '🧙',
         cost: 5,
         popularity: ClampedI8::pop_cash(1),
+        full_house_ability: Yes,
         ability_type: StarSwap,
         ability_base: 1,
     );
@@ -476,6 +487,7 @@ pub fn guest_lists() -> (
         emoji: '✂',
         cost: 7,
         cash: ClampedI8::pop_cash(-1),
+        full_house_ability: Yes,
         ability_type: Style(1),
         ability_base: 1,
     );
