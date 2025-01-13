@@ -67,7 +67,17 @@ fn main() {
                             todo!()
                         }
                         FullHouseUnusedAbilities => todo!(),
-                        GoingFine => todo!(),
+                        GoingFine => 'going_fine: loop {
+                            /*
+                            match input.trim() {
+                            "h" => party.push(player.hit_me().unwrap()),
+                            "r" => player.see_rolodex(&party.attendees),
+                            i if i.parse::<u8>().map_or(false, |n| (1..=34).contains(&n)) => party.try_use_attendee_ability(i),
+                            _ => println!("Invalid Input. Please input \"h\", \"r\", or an integer from 1 to 34.")
+                            }
+                            */
+                            todo!()
+                        },
                     }
                 }
 
