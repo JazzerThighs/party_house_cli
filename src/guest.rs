@@ -47,14 +47,15 @@ nest!(
                 NoAbility,
                 
                 // Able to be used when house is full:
-                Boot,
-                LoveArrow,
                 Evac,
                 Shutter,
                 Style(i8),
                 Quench,
                 StarSwap,
-                
+                Boot,
+                LoveArrow,
+                LoveArrowSecond, // Exists for the state-machine logic
+
                 // Able to be used when the house is full and there is at least 1 guest who has a full house ability in the party:
                 Cheer,
                 

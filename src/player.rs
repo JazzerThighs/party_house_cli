@@ -12,6 +12,7 @@ nest!(
                 guest: Option<Guest>,
                 already_served_time: bool
             },
+        pub booted: Vec<Guest>, 
         #[default(ClampedI8::from((0, 0, 65)))]
         pub popularity: ClampedI8,
         #[default(ClampedI8::from((0, 0, 30)))]
@@ -31,6 +32,7 @@ impl Player {
                 self.banned.already_served_time = true;
             }
         }
+        self.rolodex.extend(self.booted.drain(0..));
         for guest in self.rolodex.iter_mut() {
             guest.trouble = guest.trouble_base;
             guest.chill = guest.chill_base;
@@ -48,24 +50,6 @@ impl Player {
             c += 1;
         }
         self.cash += amount;
-    }
-    pub fn greet_guest(&mut self, party: &Party) {
-        let scored_guest = &party.attendees[party.attendees.len() - 1];
-        self.add_pop_from_guest(*scored_guest.popularity);
-        self.add_cash_from_guest(*scored_guest.cash);
-        self.add_pop_from_guest((scored_guest.bonus_pop)(&party));
-        if scored_guest.guest_type == GuestType::DANCER {
-            self.add_pop_from_guest(min(
-                16,
-                party
-                    .attendees
-                    .iter()
-                    .filter(|a| a.guest_type == GuestType::DANCER)
-                    .count()
-                    .pow(2) as i8,
-            ))
-        };
-        self.add_cash_from_guest((scored_guest.bonus_cash)(&party));
     }
     pub fn end_of_party_score_guests(&mut self, party: &Party) {
         self.add_pop_from_guest(
