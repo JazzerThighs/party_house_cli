@@ -1,4 +1,11 @@
-#![allow(dead_code, unused_mut, unused_imports, unused_variables, unused_labels, unused_assignments)]
+#![allow(
+    dead_code,
+    unused_mut,
+    unused_imports,
+    unused_variables,
+    unused_labels,
+    unused_assignments
+)]
 #![allow(unreachable_code)]
 mod clampedi8;
 mod guest;
@@ -22,6 +29,7 @@ fn main() {
     let mut day_count = 1;
     let mut victories = vec![false; num_players + 1];
     let (mut party, mut rng): (Party, ThreadRng);
+    
     'game: loop {
         clear().unwrap();
         for player in players.iter_mut() {
@@ -53,11 +61,11 @@ fn main() {
                         TagalongsIncoming(t) => {
                             party.state = TagalongsIncoming(t - 1);
                             todo!()
-                        },
+                        }
                         GreetsIncoming(g) => {
                             party.state = TagalongsIncoming(g - 1);
                             todo!()
-                        },
+                        }
                         FullHouseUnusedAbilities => todo!(),
                         GoingFine => todo!(),
                     }
@@ -85,6 +93,7 @@ fn main() {
             };
 
             'store: loop {
+                clear().unwrap();
                 if !&victories[0..=player.id + 1].iter().any(|v| *v) || store.done_shopping {
                     break 'store;
                 }
@@ -93,27 +102,28 @@ fn main() {
                     todo!()
                 }
 
-                // take input to determine what action to take, then loop around
-            }
-        }
-
-        clear().unwrap();
-
-        // Check for Ultimate Parties or Run Out Of Time after everyone has had a turn
-        match num_players {
-            0 => unreachable!(),
-            1 => {
-                if day_count == 25 || victories[0] {
-                    break 'game;
-                }
-            }
-            2.. => {
-                if day_count == 100 || victories.iter().any(|v| *v) {
-                    break 'game;
+                'store_action: {
+                    todo!()
                 }
             }
         }
-        day_count += 1;
+
+        'ending_check: {
+            match num_players {
+                0 => unreachable!(),
+                1 => {
+                    if day_count == 25 || victories[0] {
+                        break 'game;
+                    }
+                }
+                2.. => {
+                    if day_count == 100 || victories.iter().any(|v| *v) {
+                        break 'game;
+                    }
+                }
+            }
+            day_count += 1;
+        }
     }
 
     for i in 0..victories.len() {
