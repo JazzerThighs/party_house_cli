@@ -73,7 +73,7 @@ fn main() {
                             "h" => party.push(player.hit_me().unwrap()),
                             "r" => player.see_rolodex(&party.attendees),
                             i if i.parse::<u8>().map_or(false, |n| (1..=34).contains(&n)) => party.try_use_attendee_ability(i),
-                            _ => println!("Invalid Input. Please input \"h\", \"r\", or an integer from 1 to 34.")
+                            _ => println!("Invalid Input. Please input \"h\" to open the door, \"r\" to see your rolodex, or an integer from 1 to 34 to use an attendee's ability")
                             }
                             */
                             todo!()
