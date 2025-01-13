@@ -9,8 +9,8 @@ nest!(
         pub rolodex: Vec<Guest>,
         pub banned: 
             pub struct BannedGuest {
-                guest: Option<Guest>,
-                already_served_time: bool
+                pub guest: Option<Guest>,
+                pub already_served_time: bool
             },
         pub booted: Vec<Guest>, 
         #[default(ClampedI8::from((0, 0, 65)))]

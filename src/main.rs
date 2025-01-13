@@ -29,16 +29,34 @@ fn main() {
     let (mut players, star_guest_arrivals_for_win) = init_players(num_players);
     let mut store = init_scenerio(num_players);
     let mut day_count = 1;
-    let mut victories = vec![false; num_players + 1];
-    let (mut party, mut rng): (Party, ThreadRng);
+    let mut victories = vec![false; num_players];
+    let mut party: Party;
 
     'game: loop {
         clear().unwrap();
         for player in players.iter_mut() {
             'party_boilerplate: {
-                player.start_of_day_guest_refresh();
-                party = init_party(&player.capacity, star_guest_arrivals_for_win);
-                rng = thread_rng();
+                if let Some(g) = &player.banned.guest {
+                    if player.banned.already_served_time {
+                        player.rolodex.push(g.clone());
+                        player.banned.guest = None;
+                        player.banned.already_served_time = true;
+                    }
+                }
+                player.rolodex.extend(player.booted.drain(0..));
+                for guest in player.rolodex.iter_mut() {
+                    guest.trouble = guest.trouble_base;
+                    guest.chill = guest.chill_base;
+                    guest.ability_stock = guest.ability_base;
+                    guest.arrived_already_today = false;
+                }
+
+                party = Party {
+                    capacity: player.capacity.clone(),
+                    star_guest_arrivals_for_win,
+                    ..Default::default()
+                };
+                let mut rng = thread_rng();
                 player.rolodex.shuffle(&mut rng);
             }
 
@@ -187,27 +205,32 @@ fn main() {
 
             'handle_party_end: {
                 if party.state == EndedSuccessfully {
-                    player.end_of_party_score_guests(&party);
-                    if party.attendees.iter().filter(|a| *a.stars == 1).count()
-                        - party.attendees.iter().filter(|a| *a.stars == 1).count()
-                        >= star_guest_arrivals_for_win
-                    {
-                        victories[player.id] = true;
-                        todo!() // Show that the player won
-                    }
+                    
                 } else {
-                    if party.state == TooMuchTrouble {
-                        todo!() // Show that the cops came
-                    } else if party.state == Overcrowded {
-                        todo!() // Show that the fire marshall came
+                    match party.state {
+                        TooMuchTrouble => {
+                            todo!(); // Cops Came
+                            player.blame_someone(&mut party);
+                        },
+                        Overcrowded => {
+                            todo!(); // Fire Marshal Came
+                            player.blame_someone(&mut party);
+                        },
+                        EndedSuccessfully => {
+                            player.end_of_party_score_guests(&party);
+                            if party.attendees.iter().filter(|a| *a.stars == 1).count()
+                                - party.attendees.iter().filter(|a| *a.stars == 1).count()
+                                >= star_guest_arrivals_for_win
+                            {
+                                victories[player.id] = true;
+                                todo!() // Show that the player won
+                            }
+                        },
+                        _ => unreachable!()
                     }
-                    player.blame_someone(&mut party);
                 }
+                player.rolodex.extend(party.attendees.drain(0..))
             }
-
-            'return_guests_to_player: {
-                todo!()
-            };
 
             'store: loop {
                 clear().unwrap();
