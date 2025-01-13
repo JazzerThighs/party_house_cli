@@ -1,9 +1,6 @@
 use crate::{clampedi8::*, guest::*, player::*};
 use better_default::Default;
-use clearscreen::clear;
 use nestify::nest;
-use rand::{seq::SliceRandom, thread_rng};
-use std::io::stdin;
 
 nest!(
     #[derive(Default, Debug)]*
@@ -14,7 +11,7 @@ nest!(
         pub trouble_count: u8,
         pub chill_count: u8,
         pub star_guest_arrivals_for_win: usize,
-        pub party_state:
+        pub state:
             #[derive(Clone, PartialEq, Eq)]
             pub enum PartyState {
                 TooMuchTrouble,
@@ -36,8 +33,8 @@ nest!(
 
 impl Party {
     #[rustfmt::skip]
-    fn evaluate_party_state(&mut self, player: &Player) {
-        self.party_state = {
+    pub fn evaluate_state(&mut self, player: &Player) {
+        self.state = {
             use FullHouseAbilityCondition::*;
             use PartyState::*;
             if self.attendees.iter().filter(|g| g.trouble).count() - self.attendees.iter().filter(|g| g.chill).count() >= 3 {
@@ -70,31 +67,8 @@ impl Party {
             } else if self.attendees.len() == *self.capacity as usize || player.rolodex.is_empty() {
                 EndedSuccessfully
             } else {
-                self.party_state.clone()
+                self.state.clone()
             }
         };
-    }
-}
-
-pub fn do_partying(party: &mut Party, player: &mut Player, victories: &mut Vec<bool>) {
-    let mut rng = thread_rng();
-    player.rolodex.shuffle(&mut rng);
-
-    'partyloop: loop {
-        'partyheader: {
-            clear().unwrap();
-            println!("Player {}, throw a party!", player.id);
-            if victories.iter().any(|v| *v) {
-                for i in 0..victories.len() {
-                    if victories[i] {
-                        println!("Player {} won today!", i + 1)
-                    };
-                }
-                println!("Last Chance!\n");
-            } else {
-                break 'partyheader;
-            }
-        }
-        break 'partyloop;
     }
 }

@@ -151,4 +151,7 @@ impl Player {
         self.banned.guest = Some(guest);
         self.banned.already_served_time = false;
     }
+    pub fn blame_someone(&mut self, party: &mut Party) {
+        todo!()
+    }
 }

@@ -1,4 +1,4 @@
-use crate::{clampedi8::ClampedI8, guest::*, party::*, player::*};
+use crate::{clampedi8::ClampedI8, guest::*, party::*, player::*, store::*};
 use clearscreen::*;
 use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::{cmp::max, io::stdin};
@@ -223,12 +223,11 @@ pub fn init_scenerio(num_players: usize) -> Store {
     }
     clear().unwrap();
     
-    store.sort_by(|a, b| a.0.cost.cmp(&b.0.cost));
     store.sort_by(|a, b| a.0.sort_value.cmp(&b.0.sort_value));
     
     Store {
         stock: store,
-        still_shopping: true,
+        done_shopping: true,
     }
 }
 
