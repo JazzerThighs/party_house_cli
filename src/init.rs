@@ -239,10 +239,26 @@ pub fn init_scenerio(num_players: usize) -> Store {
     }
 }
 
-pub fn init_party(cap: &ClampedI8, star_guest_arrivals_for_win: usize) -> Party {
-    Party {
-        capacity: cap.clone(),
+pub fn init_party(party: &mut Party, player: &mut Player, star_guest_arrivals_for_win: usize) {
+    if let Some(bg) = &player.banned.guest {
+        if player.banned.already_served_time {
+            player.rolodex.push(bg.clone());
+            player.banned.guest = None;
+        }
+    }
+    player.banned.already_served_time = true;
+    player.rolodex.extend(player.booted.drain(0..));
+    for guest in player.rolodex.iter_mut() {
+        guest.trouble = guest.trouble_base;
+        guest.chill = guest.chill_base;
+        guest.ability_stock = guest.ability_base;
+        guest.arrived_already_today = false;
+    }
+    *party = Party {
+        capacity: player.capacity.clone(),
         star_guest_arrivals_for_win,
         ..Default::default()
-    }
+    };
+    let mut rng = thread_rng();
+    player.rolodex.shuffle(&mut rng);
 }

@@ -24,109 +24,38 @@ nest!(
 );
 
 impl Player {
-    pub fn start_of_day_guest_refresh(&mut self) {
-        if let Some(g) = &self.banned.guest {
-            if self.banned.already_served_time {
-                self.rolodex.push(g.clone());
-                self.banned.guest = None;
-                self.banned.already_served_time = true;
-            }
-        }
-        self.rolodex.extend(self.booted.drain(0..));
-        for guest in self.rolodex.iter_mut() {
-            guest.trouble = guest.trouble_base;
-            guest.chill = guest.chill_base;
-            guest.ability_stock = guest.ability_base;
-            guest.arrived_already_today = false;
-        }
-    }
     pub fn add_pop_from_guest(&mut self, amount: i8) {
         self.popularity += amount;
     }
     pub fn add_cash_from_guest(&mut self, amount: i8) {
-        let mut c: i8 = *(self.cash.clone() + amount).clone();
+        let mut c: i8 = *(self.cash.clone() + amount);
         while c < 0 {
             self.popularity += -7;
             c += 1;
         }
         self.cash += amount;
     }
+    #[rustfmt::skip]
     pub fn end_of_party_score_guests(&mut self, party: &Party) {
-        self.add_pop_from_guest(
-            party
-                .attendees
-                .iter()
-                .filter(|a| *a.popularity >= 0)
-                .map(|a| *a.popularity)
-                .sum(),
-        );
-        self.add_pop_from_guest(
-            party
-                .attendees
-                .iter()
-                .filter(|a| *a.popularity < 0)
-                .map(|a| *a.popularity)
-                .sum(),
-        );
-        self.add_cash_from_guest(
-            party
-                .attendees
-                .iter()
-                .filter(|a| *a.cash >= 0)
-                .map(|a| *a.cash)
-                .sum(),
-        );
-        self.add_cash_from_guest(
-            party
-                .attendees
-                .iter()
-                .filter(|a| *a.cash < 0)
-                .map(|a| *a.cash)
-                .sum(),
-        );
-        self.add_pop_from_guest(
-            party
-                .attendees
-                .iter()
-                .filter(|a| (a.bonus_pop)(&party) >= 0)
-                .filter(|a| a.guest_type != GuestType::DANCER)
-                .map(|a| (a.bonus_pop)(&party))
-                .sum(),
-        );
-        // Dancer Bonus seperated from other bonuses to eliminate duplicate bonuses
+        // Pop Score
+        self.add_pop_from_guest(party.attendees.iter().filter(|a| *a.popularity >= 0).map(|a| *a.popularity).sum());
+        self.add_pop_from_guest(party.attendees.iter().filter(|a| *a.popularity < 0).map(|a| *a.popularity).sum());
+        
+        // Cash Score
+        self.add_cash_from_guest(party.attendees.iter().filter(|a| *a.cash >= 0).map(|a| *a.cash).sum());
+        self.add_cash_from_guest(party.attendees.iter().filter(|a| *a.cash < 0).map(|a| *a.cash).sum());
+        
+        // Pop Bonuses; Note: Dancer Bonus seperated from other bonuses to eliminate duplicate Dancer bonuses.
+        self.add_pop_from_guest(party.attendees.iter().filter(|a| (a.bonus_pop)(&party) >= 0).filter(|a| a.guest_type != GuestType::DANCER).map(|a| (a.bonus_pop)(&party)).sum());
         self.add_pop_from_guest(min(
             16,
-            party
-                .attendees
-                .iter()
-                .filter(|a| a.guest_type == GuestType::DANCER)
-                .count()
-                .pow(2) as i8,
+            party.attendees.iter().filter(|a| a.guest_type == GuestType::DANCER).count().pow(2) as i8
         ));
-        self.add_pop_from_guest(
-            party
-                .attendees
-                .iter()
-                .filter(|a| (a.bonus_pop)(&party) < 0)
-                .map(|a| (a.bonus_pop)(&party))
-                .sum(),
-        );
-        self.add_cash_from_guest(
-            party
-                .attendees
-                .iter()
-                .filter(|a| (a.bonus_cash)(&party) >= 0)
-                .map(|a| (a.bonus_cash)(&party))
-                .sum(),
-        );
-        self.add_cash_from_guest(
-            party
-                .attendees
-                .iter()
-                .filter(|a| (a.bonus_cash)(&party) < 0)
-                .map(|a| (a.bonus_cash)(&party))
-                .sum(),
-        );
+        self.add_pop_from_guest(party.attendees.iter().filter(|a| (a.bonus_pop)(&party) < 0).map(|a| (a.bonus_pop)(&party)).sum());
+        
+        // Cash Bonuses
+        self.add_cash_from_guest(party.attendees.iter().filter(|a| (a.bonus_cash)(&party) >= 0).map(|a| (a.bonus_cash)(&party)).sum(),);
+        self.add_cash_from_guest(party.attendees.iter().filter(|a| (a.bonus_cash)(&party) < 0).map(|a| (a.bonus_cash)(&party)).sum(),);
     }
     pub fn ban_guest(&mut self, guest: Guest) {
         if let Some(g) = &self.banned.guest {
@@ -134,8 +63,5 @@ impl Player {
         }
         self.banned.guest = Some(guest);
         self.banned.already_served_time = false;
-    }
-    pub fn blame_someone(&mut self, party: &mut Party) {
-        todo!()
     }
 }
