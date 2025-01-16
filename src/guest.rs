@@ -444,7 +444,7 @@ pub fn guest_lists() -> (
         randos,
         CUPID,
         sort_value: 82,
-        emoji: '💘',
+        emoji: '👼',
         cost: 8,
         popularity: ClampedI8::pop_cash(1),
         full_house_ability: Yes,
@@ -500,7 +500,10 @@ pub fn guest_lists() -> (
         cost: 5,
         popularity: ClampedI8::pop_cash(4),
         // Causes trouble every other time it enters the party, through either the door or by summoning. Can flipflop within the span of 1 party if they arrive, are evac'd, and then arrive again.
-        entrance_effect: |g| g.trouble_base = !g.trouble_base
+        entrance_effect: |g| {
+            g.trouble_base = !g.trouble_base;
+            g.trouble = g.trouble_base;
+        }
     );
     
     // Star Guests, win condition fulfillers

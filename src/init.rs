@@ -1,4 +1,4 @@
-use crate::{clampedi8::ClampedI8, guest::*, party::*, player::*, store::*};
+use crate::{clampedi8::ClampedI8, guest::{GuestType::*, *}, party::*, player::*, store::*};
 use clearscreen::*;
 use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::{cmp::max, io::stdin};
@@ -59,10 +59,10 @@ pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
 const fn get_num_stocks(num_players: usize) -> f32 {
     (4 + (2 * (num_players - 1))) as f32
 }
+
 pub fn init_scenerio(num_players: usize) -> Store {
     let (friends, randos, star_guests) = guest_lists();
     let num_stocks = get_num_stocks(num_players);
-    use GuestType::*;
     macro_rules! place {
         (star_guests, $gt: ident) => {
             (friends[&$gt].clone(), num_stocks)
@@ -205,8 +205,7 @@ pub fn init_scenerio(num_players: usize) -> Store {
                 break;
             }
             Ok(num) if num == 6 => {
-                let flip: f64 = thread_rng().gen();
-                let (randos_num, star_guests_num) = if flip < 0.2 { (11, 2) } else { (12, 1) };
+                let (randos_num, star_guests_num) = (11, 2);
 
                 let mut randos_keys: Vec<GuestType> = randos.keys().cloned().collect();
                 let mut rng = thread_rng();

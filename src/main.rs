@@ -4,18 +4,18 @@
     unused_imports,
     unused_variables,
     unused_labels,
-    unused_assignments
+    unused_assignments,
+    unreachable_code
 )]
-#![allow(unreachable_code)]
 mod clampedi8;
 mod guest;
 mod init;
 mod party;
 mod player;
 mod store;
+mod display;
 
 use clearscreen::clear;
-use guest::FullHouseAbilityCondition;
 use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng};
 use std::{cmp::min, io::stdin};
 use {
@@ -23,6 +23,7 @@ use {
     init::*,
     party::{PartyAction::*, PartyState::*, *},
     store::*,
+    display::*
 };
 
 fn main() {
@@ -36,6 +37,7 @@ fn main() {
     'game: loop {
         clear().unwrap();
         for player in players.iter_mut() {
+            let boxed_message: String = String::from("");
             init_party(&mut party, player, star_guest_arrivals_for_win);
 
             'ongoing_party: loop {
@@ -50,7 +52,10 @@ fn main() {
                         }
                         println!("Last Chance!\n");
                     }
-                    todo!()
+                    for i in 0..*party.capacity {
+
+                    }
+                    println!("{boxed_message}");
                 }
 
                 'evaluate_party: {
