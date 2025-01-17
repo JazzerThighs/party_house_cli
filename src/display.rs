@@ -1,7 +1,7 @@
 use crate::{
     guest::{AbilityType::*, FullHouseAbilityCondition::*, GuestType::*, *},
     init::*,
-    party::{PartyAction::*, PartyState::*, *},
+    party::{PartyState::*, *},
     store::*,
 };
 
@@ -66,11 +66,11 @@ const fn ability_type_display(ability_type: &AbilityType) -> &str {
         StarSwap => "🔄",
         Boot => "🥾",
         LoveArrow => "💘",
-        LoveArrowSecond => unreachable!(),
         Cheer => "🎊",
         Summoning => "⬇️",
         Peek => "👀",
         Greet => "🚪",
+        LoveArrowSecond(_) => unreachable!(),
     }
 }
 

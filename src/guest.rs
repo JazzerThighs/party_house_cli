@@ -42,10 +42,10 @@ nest!(
         pub ability_type: 
             #[derive(PartialEq, Eq)]
             pub enum AbilityType {
-                // Determines if an ability is still able to be used when the house is full (or, alternatively, when the player's rolodex is empty.)
                 #[default]
                 NoAbility,
                 
+                // Determine if an ability is still able to be used when the house is full (or, alternatively, when the player's rolodex is empty.)
                 // Able to be used when house is full:
                 Evac,
                 Shutter,
@@ -54,7 +54,7 @@ nest!(
                 StarSwap,
                 Boot,
                 LoveArrow,
-                LoveArrowSecond, // Exists for the state-machine logic
+                LoveArrowSecond(usize), // Exists for the state-machine logic
 
                 // Able to be used when the house is full and there is at least 1 guest who has a full house ability in the party:
                 Cheer,

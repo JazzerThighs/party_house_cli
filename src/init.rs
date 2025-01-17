@@ -205,12 +205,10 @@ pub fn init_scenerio(num_players: usize) -> Store {
                 break;
             }
             Ok(num) if num == 6 => {
-                let (randos_num, star_guests_num) = (11, 2);
-
                 let mut randos_keys: Vec<GuestType> = randos.keys().cloned().collect();
                 let mut rng = thread_rng();
                 randos_keys.shuffle(&mut rng);
-                let chosen_randos = &randos_keys[..randos_num];
+                let chosen_randos = &randos_keys[..11];
                 for guest in chosen_randos {
                     store.extend(vec![(randos[&guest].clone(), num_stocks)]);
                 }
@@ -218,7 +216,7 @@ pub fn init_scenerio(num_players: usize) -> Store {
                 let mut star_keys: Vec<GuestType> = star_guests.keys().cloned().collect();
                 let mut rng = thread_rng();
                 star_keys.shuffle(&mut rng);
-                let chosen_stars = &star_keys[..star_guests_num];
+                let chosen_stars = &star_keys[..2];
                 for guest in chosen_stars {
                     store.extend(vec![(star_guests[&guest].clone(), f32::INFINITY)]);
                 }
@@ -234,7 +232,7 @@ pub fn init_scenerio(num_players: usize) -> Store {
     
     Store {
         stock: store,
-        done_shopping: true,
+        done_shopping: false,
     }
 }
 
