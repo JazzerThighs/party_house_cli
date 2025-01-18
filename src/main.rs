@@ -139,10 +139,9 @@ fn main() {
                         (AbilityState(a), _, _, _, _) => match a {
                             Shutter | Style(_) | StarSwap | Boot | LoveArrow
                             | LoveArrowSecond(_) | Cheer => {
-                                todo!()
                                 // get input to select the attendee that will be affected by the ability
+                                todo!()
                             }
-
                             Evac => {
                                 party.attendees[party.attendee_ability_source].ability_stock -= 1;
                                 player.rolodex.extend(party.attendees.drain(0..));
@@ -166,21 +165,27 @@ fn main() {
                                 continue 'ongoing_party;
                             }
                             Peek | Greet | Summoning => {
-                                if house_is_full || rolodex_is_empty {
-                                    party.state = IncomingGuest {
-                                        amount: 0,
-                                        greet: false,
-                                    }
-                                } else {
+                                let (mut amount, mut greet): (u8, bool) = (0, false);
+                                if !(house_is_full || rolodex_is_empty) {
                                     match a {
-                                        Peek => {}
-                                        Greet => {}
-                                        Summoning => {}
+                                        Peek => party.peek_slot = Some(player.rolodex.pop().unwrap()),
+                                        Greet => {
+                                            amount = 1;
+                                            greet = true;
+                                        }
+                                        Summoning => {
+                                            // show a list of people from the rolodex who aren't banned
+                                            todo!()
+                                        }
                                         _ => unreachable!(),
                                     }
                                 }
+                                party.state = IncomingGuest {
+                                    amount,
+                                    greet,
+                                };
+                                continue 'ongoing_party;
                             }
-
                             NoAbility => {
                                 party.state = IncomingGuest {
                                     amount: 0,
