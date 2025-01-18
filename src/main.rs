@@ -18,7 +18,7 @@ mod store;
 use clearscreen::clear;
 use guest::Guest;
 use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng};
-use std::{cmp::min, io::stdin, net::Incoming, os::unix::thread};
+use std::{cmp::min, io::stdin};
 use {
     display::*,
     guest::{AbilityType::*, FullHouseAbilityCondition::*, GuestType::*},
@@ -72,7 +72,7 @@ fn main() {
                         available_full_house_abilities,
                         replenishes_available,
                     ) {
-                        (IncomingGuest { amount, greet }, _, _, _) if amount >= 1 => 'try_to_add_guests: {
+                        (IncomingGuest { mut amount, greet }, _, _, _) if amount >= 1 => 'try_to_add_guests: {
                             // Let a new guest into the party.
                             if player.rolodex.is_empty() {
                                 party.state = IncomingGuest {
@@ -82,12 +82,12 @@ fn main() {
                                 continue 'ongoing_party;
                             } else {
                                 party.attendees.push(player.rolodex.pop().unwrap());
-                                // let mut scored_guest = &party.attendees[party.attendees.len() - 1];
+                                let newest_guest = party.attendees.len() - 1;
                                 if greet {
-                                    player.add_pop_from_guest(*party.attendees[party.attendees.len() - 1].popularity);
-                                    player.add_cash_from_guest(*party.attendees[party.attendees.len() - 1].cash);
-                                    player.add_pop_from_guest((party.attendees[party.attendees.len() - 1].bonus_pop)(&party));
-                                    if party.attendees[party.attendees.len() - 1].guest_type == DANCER {
+                                    player.add_pop_from_guest(*party.attendees[newest_guest].popularity);
+                                    player.add_cash_from_guest(*party.attendees[newest_guest].cash);
+                                    player.add_pop_from_guest((party.attendees[newest_guest].bonus_pop)(&party));
+                                    if party.attendees[newest_guest].guest_type == DANCER {
                                         player.add_pop_from_guest(min(
                                             16,
                                             party
@@ -99,10 +99,10 @@ fn main() {
                                                 as i8,
                                         ))
                                     };
-                                    player.add_cash_from_guest((party.attendees[party.attendees.len() - 1].bonus_cash)(&party));
+                                    player.add_cash_from_guest((party.attendees[newest_guest].bonus_cash)(&party));
                                 }
-                                (party.attendees[party.attendees.len() - 1].entrance_effect)(&mut party.attendees[party.attendees.len() - 1]);
-                                let a = amount + party.attendees[party.attendees.len() - 1].tagalongs;
+                                (party.attendees[newest_guest].entrance_effect)(&mut party.attendees[newest_guest]);
+                                amount += party.attendees[newest_guest].tagalongs;
                                 party.state = match amount {
                                     0 => unreachable!(),
                                     1 => IncomingGuest {
@@ -110,7 +110,7 @@ fn main() {
                                         greet: false,
                                     },
                                     2.. => IncomingGuest {
-                                        amount: a - 1,
+                                        amount: amount - 1,
                                         greet,
                                     },
                                 };
