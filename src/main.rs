@@ -61,18 +61,20 @@ fn main() {
 
                 'evaluate_party: {
                     let (
-                        no_more_guests_can_come_in,
+                        house_is_full,
+                        rolodex_is_empty,
                         available_full_house_abilities,
                         replenishes_available,
                     ) = get_party_state(&party, player);
 
                     match (
                         party.state.clone(),
-                        no_more_guests_can_come_in,
+                        house_is_full,
+                        rolodex_is_empty,
                         available_full_house_abilities,
                         replenishes_available,
                     ) {
-                        (IncomingGuest { mut amount, greet }, _, _, _) if amount >= 1 => 'try_to_add_guests: {
+                        (IncomingGuest { mut amount, greet }, _, _, _, _) if amount >= 1 => {
                             // Let a new guest into the party.
                             if player.rolodex.is_empty() {
                                 party.state = IncomingGuest {
@@ -84,9 +86,14 @@ fn main() {
                                 party.attendees.push(player.rolodex.pop().unwrap());
                                 let newest_guest = party.attendees.len() - 1;
                                 if greet {
-                                    player.add_pop_from_guest(*party.attendees[newest_guest].popularity);
+                                    player.add_pop_from_guest(
+                                        *party.attendees[newest_guest].popularity,
+                                    );
                                     player.add_cash_from_guest(*party.attendees[newest_guest].cash);
-                                    player.add_pop_from_guest((party.attendees[newest_guest].bonus_pop)(&party));
+                                    player.add_pop_from_guest((party.attendees[newest_guest]
+                                        .bonus_pop)(
+                                        &party
+                                    ));
                                     if party.attendees[newest_guest].guest_type == DANCER {
                                         player.add_pop_from_guest(min(
                                             16,
@@ -99,9 +106,14 @@ fn main() {
                                                 as i8,
                                         ))
                                     };
-                                    player.add_cash_from_guest((party.attendees[newest_guest].bonus_cash)(&party));
+                                    player.add_cash_from_guest((party.attendees[newest_guest]
+                                        .bonus_cash)(
+                                        &party
+                                    ));
                                 }
-                                (party.attendees[newest_guest].entrance_effect)(&mut party.attendees[newest_guest]);
+                                (party.attendees[newest_guest].entrance_effect)(
+                                    &mut party.attendees[newest_guest],
+                                );
                                 amount += party.attendees[newest_guest].tagalongs;
                                 party.state = match amount {
                                     0 => unreachable!(),
@@ -116,7 +128,7 @@ fn main() {
                                 };
                                 if check_for_party_end_conditions(
                                     &mut party,
-                                    no_more_guests_can_come_in,
+                                    house_is_full || rolodex_is_empty,
                                 ) {
                                     break 'ongoing_party;
                                 }
@@ -124,7 +136,7 @@ fn main() {
                             }
                         }
 
-                        (AbilityState(a), _, _, _) => match a {
+                        (AbilityState(a), _, _, _, _) => match a {
                             Shutter | Style(_) | StarSwap | Boot | LoveArrow
                             | LoveArrowSecond(_) | Cheer => {
                                 todo!()
@@ -136,27 +148,36 @@ fn main() {
                                 player.rolodex.extend(party.attendees.drain(0..));
                                 let mut rng = thread_rng();
                                 player.rolodex.shuffle(&mut rng);
-                                party.state = IncomingGuest{ amount: 0, greet: false};
+                                party.state = IncomingGuest {
+                                    amount: 0,
+                                    greet: false,
+                                };
                                 continue 'ongoing_party;
-                            },
+                            }
                             Quench => {
                                 party.attendees[party.attendee_ability_source].ability_stock -= 1;
                                 for p in party.attendees.iter_mut() {
                                     p.trouble = false;
                                 }
-                                party.state = IncomingGuest{ amount: 0, greet: false};
+                                party.state = IncomingGuest {
+                                    amount: 0,
+                                    greet: false,
+                                };
                                 continue 'ongoing_party;
-                            },
-                            Peek => todo!(),
-                            Greet => todo!(),
-                            Summoning => {
-                                if no_more_guests_can_come_in {
+                            }
+                            Peek | Greet | Summoning => {
+                                if house_is_full || rolodex_is_empty {
                                     party.state = IncomingGuest {
                                         amount: 0,
                                         greet: false,
                                     }
                                 } else {
-                                    todo!()
+                                    match a {
+                                        Peek => {}
+                                        Greet => {}
+                                        Summoning => {}
+                                        _ => unreachable!(),
+                                    }
                                 }
                             }
 
@@ -168,16 +189,17 @@ fn main() {
                             }
                         },
 
-                        (_, true, true, _) | (_, true, _, true) => {
-                            party.state = FullHouseUnusedAbility
-                        }
+                        (_, true, _, true, _)
+                        | (_, true, _, _, true)
+                        | (_, _, true, true, _)
+                        | (_, _, true, _, true) => party.state = FullHouseUnusedAbility,
 
-                        (ViewingRolodex, _, _, _) => todo!(),
+                        (ViewingRolodex, _, _, _, _) => todo!(),
 
-                        (_, _, _, _) => {
+                        (_, _, _, _, _) => {
                             if check_for_party_end_conditions(
                                 &mut party,
-                                no_more_guests_can_come_in,
+                                house_is_full || rolodex_is_empty,
                             ) {
                                 break 'ongoing_party;
                             }

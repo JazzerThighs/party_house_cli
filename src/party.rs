@@ -30,9 +30,9 @@ nest!(
     }
 );
 
-pub fn get_party_state(party: &Party, player: &Player) -> (bool, bool, bool) {
-    let no_more_guests_can_come_in: bool =
-        party.attendees.len() == *party.capacity as usize || player.rolodex.is_empty();
+pub fn get_party_state(party: &Party, player: &Player) -> (bool, bool, bool, bool) {
+    let house_is_full: bool =party.attendees.len() == *party.capacity as usize;
+    let rolodex_is_empty: bool = player.rolodex.is_empty();
     let available_full_house_abilities: bool = party
         .attendees
         .iter()
@@ -54,7 +54,8 @@ pub fn get_party_state(party: &Party, player: &Player) -> (bool, bool, bool) {
             .count()
             >= 1;
     (
-        no_more_guests_can_come_in,
+        house_is_full,
+        rolodex_is_empty,
         available_full_house_abilities,
         replenishes_available,
     )
