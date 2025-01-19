@@ -168,8 +168,12 @@ fn main() {
                                 let (mut amount, mut greet): (u8, bool) = (0, false);
                                 if !(house_is_full || rolodex_is_empty) {
                                     match a {
-                                        Peek => party.peek_slot = Some(player.rolodex.pop().unwrap()),
+                                        Peek => {
+                                            party.attendees[party.attendee_ability_source].ability_stock -= 1;
+                                            party.peek_slot = Some(player.rolodex.pop().unwrap())
+                                        },
                                         Greet => {
+                                            party.attendees[party.attendee_ability_source].ability_stock -= 1;
                                             amount = 1;
                                             greet = true;
                                         }
@@ -186,12 +190,7 @@ fn main() {
                                 };
                                 continue 'ongoing_party;
                             }
-                            NoAbility => {
-                                party.state = IncomingGuest {
-                                    amount: 0,
-                                    greet: false,
-                                }
-                            }
+                            NoAbility => unreachable!()
                         },
 
                         (_, true, _, true, _)
@@ -199,7 +198,16 @@ fn main() {
                         | (_, _, true, true, _)
                         | (_, _, true, _, true) => party.state = FullHouseUnusedAbility,
 
-                        (ViewingRolodex, _, _, _, _) => todo!(),
+                        (ViewingRolodex, _, _, _, _) => {
+                            let mut rolodex_view: Vec<&Guest> = player.rolodex.iter().collect();
+                            let mut attendees_view: Vec<&Guest> = party.attendees.iter().collect();
+                            let mut booted_view: Vec<&Guest> = player.booted.iter().collect();
+                            // if let Some(banned) = &player.banned.guest { booted_view.push(&banned) };
+                            rolodex_view.sort_by_key(|guest| guest.sort_value);
+                            attendees_view.sort_by_key(|guest| guest.sort_value);
+                            booted_view.sort_by_key(|guest| guest.sort_value);
+                            todo!()
+                        },
 
                         (_, _, _, _, _) => {
                             if check_for_party_end_conditions(
