@@ -74,7 +74,11 @@ fn main() {
                                 };
                                 continue 'ongoing_party;
                             } else {
-                                party.attendees.push(player.rolodex.pop().unwrap());
+                                if let Some(next_in_line) = party.peek_slot.take() { 
+                                    party.attendees.push(next_in_line);
+                                } else {
+                                    party.attendees.push(player.rolodex.pop().unwrap())
+                                };
                                 let newest_guest = party.attendees.len() - 1;
                                 if greet {
                                     player.add_pop_from_guest(
@@ -308,10 +312,21 @@ fn main() {
         }
     }
 
-    for i in 0..victories.len() {
-        match victories[i] {
-            true => println!("Player {} threw the Ultimate Party!", i + 1),
-            false => println!("Player {} loses!", i + 1),
+    clear().unwrap();
+    if victories.iter().filter(|v| **v).count() > 1 {
+        for i in 0..victories.len() {
+            match victories[i] {
+                true => println!("Player {} threw the Ultimate Party! Win!", i + 1),
+                false => println!("Player {} loses!", i + 1),
+            }
+        }
+    } else {
+        for i in 0..victories.len() {
+            match victories[i] {
+                true => println!("Player {} is the Party Master! Win!", i + 1),
+                false => {},
+            }
+            println!("Everyone else loses! All of their vibes were way off!")
         }
     }
     println!();
