@@ -40,25 +40,16 @@ fn main() {
     'game: loop {
         clear().unwrap();
         for player in players.iter_mut() {
-            let boxed_message: String = String::from("");
             init_party(&mut party, player, star_guest_arrivals_for_win);
-
             'ongoing_party: loop {
-                'party_display: {
-                    clear().unwrap();
-                    println!("Player {}, throw a party!", player.id);
-                    if victories.iter().any(|v| *v) {
-                        for v in victories.iter() {
-                            if *v {
-                                println!("Player {} won today!", player.id + 1)
-                            };
-                        }
-                        println!("Last Chance!\n");
-                    }
-                    for i in 0..*party.capacity {}
-                    println!("{boxed_message}");
+                macro_rules! refresh {
+                    (party $boxed_message:expr) => {
+                        party_display(party, player, victories, $boxed_message.to_string());
+                    };
+                    (store $boxed_message:expr) => {
+                        store_display(store, player, $boxed_message.to_string())
+                    };
                 }
-
                 'evaluate_party: {
                     let (
                         house_is_full,
@@ -116,7 +107,6 @@ fn main() {
                                 );
                                 amount += party.attendees[newest_guest].tagalongs;
                                 party.state = match amount {
-                                    0 => unreachable!(),
                                     1 => IncomingGuest {
                                         amount: 0,
                                         greet: false,
@@ -125,6 +115,7 @@ fn main() {
                                         amount: amount - 1,
                                         greet,
                                     },
+                                    0 => unreachable!(),
                                 };
                                 if check_for_party_end_conditions(
                                     &mut party,
@@ -137,8 +128,7 @@ fn main() {
                         }
 
                         (AbilityState(a), _, _, _, _) => match a {
-                            Shutter | Style(_) | StarSwap | Boot | LoveArrow
-                            | LoveArrowSecond(_) | Cheer => {
+                            Shutter | Style(_) | StarSwap | Boot | LoveArrow | Cheer => {
                                 // get input to select the attendee that will be affected by the ability
                                 todo!()
                             }
@@ -169,11 +159,18 @@ fn main() {
                                 if !(house_is_full || rolodex_is_empty) {
                                     match a {
                                         Peek => {
-                                            party.attendees[party.attendee_ability_source].ability_stock -= 1;
-                                            party.peek_slot = Some(player.rolodex.pop().unwrap())
-                                        },
+                                            if party.peek_slot.is_none() {
+                                                party.attendees[party.attendee_ability_source]
+                                                    .ability_stock -= 1;
+                                                party.peek_slot =
+                                                    Some(player.rolodex.pop().unwrap())
+                                            } else {
+                                                todo!()
+                                            }
+                                        }
                                         Greet => {
-                                            party.attendees[party.attendee_ability_source].ability_stock -= 1;
+                                            party.attendees[party.attendee_ability_source]
+                                                .ability_stock -= 1;
                                             amount = 1;
                                             greet = true;
                                         }
@@ -184,13 +181,10 @@ fn main() {
                                         _ => unreachable!(),
                                     }
                                 }
-                                party.state = IncomingGuest {
-                                    amount,
-                                    greet,
-                                };
+                                party.state = IncomingGuest { amount, greet };
                                 continue 'ongoing_party;
                             }
-                            NoAbility => unreachable!()
+                            NoAbility => unreachable!(),
                         },
 
                         (_, true, _, true, _)
@@ -207,7 +201,7 @@ fn main() {
                             attendees_view.sort_by_key(|guest| guest.sort_value);
                             booted_view.sort_by_key(|guest| guest.sort_value);
                             todo!()
-                        },
+                        }
 
                         (_, _, _, _, _) => {
                             if check_for_party_end_conditions(
@@ -268,18 +262,30 @@ fn main() {
                 player.rolodex.extend(party.attendees.drain(0..))
             }
 
-            'store: loop {
-                clear().unwrap();
+            'store: {
                 if !&victories[0..=player.id + 1].iter().any(|v| *v) || store.done_shopping {
                     break 'store;
                 }
-                'store_display: {
-                    println!("Player {}, spend Pop to add guests to your rolodex; Spend Cash to expand the capacity of your house:\n", player.id + 1);
-                    todo!()
-                }
 
-                'store_action: {
-                    todo!()
+                'store_input: loop {
+                    let mut input = String::new();
+                    if let Err(e) = stdin().read_line(&mut input) {
+                        eprintln!("Error reading input: {}", e);
+                        continue 'store_input;
+                    }
+                    match input.trim() {
+                        "c" => {
+                            todo!();
+                            continue 'store_input;
+                        },
+                        "r" => {
+                            todo!();
+                            continue 'store_input;
+                        },
+                        "e" => break 'store,
+                        i if i.parse::<u8>().map_or(false, |n| (1..=13).contains(&n)) => todo!(),
+                        _ => println!("Invalid Input. Please input \"c\" to increase the capacity of your house, \"r\" to see your rolodex, \"e\" to finish shopping, or an integer from 1 to 13 to add an available contact to your rolodex.")
+                    }
                 }
             }
         }

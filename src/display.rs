@@ -1,8 +1,9 @@
+use clearscreen::clear;
 use crate::{
     guest::{AbilityType::*, FullHouseAbilityCondition::*, GuestType::*, *},
     init::*,
     party::{PartyState::*, *},
-    store::*,
+    store::*, Player,
 };
 
 const fn guest_type_display(guesttype: &GuestType) -> &str {
@@ -59,7 +60,7 @@ const fn guest_type_display(guesttype: &GuestType) -> &str {
 const fn ability_type_display(ability_type: &AbilityType) -> &str {
     match ability_type {
         NoAbility => "",
-        Evac => "🎆",
+        Evac => "🔥",
         Shutter => "📸",
         Style(x) => "⬆️{x}",
         Quench => "🧯",
@@ -70,7 +71,6 @@ const fn ability_type_display(ability_type: &AbilityType) -> &str {
         Summoning => "⬇️",
         Peek => "👀",
         Greet => "🚪",
-        LoveArrowSecond(_) => unreachable!(),
     }
 }
 
@@ -105,4 +105,24 @@ pub fn display_attendee(guest: &Guest) -> String {
             1.. => ability_type_display(&guest.ability_type)
         }
     )
+}
+
+pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxed_message: String) {
+    clear().unwrap();
+    println!("Player {}, throw a party!", player.id);
+    if victories.iter().any(|v| *v) {
+        for v in victories.iter() {
+            if *v {
+                println!("Player {} won today!", player.id + 1)
+            };
+        }
+        println!("Last Chance!\n");
+    }
+    for i in 0..*party.capacity { todo!() }
+}
+
+pub fn store_display(store: Store, player: &Player, boxed_message: String) {
+    clear().unwrap();
+    println!("Player {}, spend Pop to add guests to your rolodex; Spend Cash to expand the capacity of your house:\n", player.id + 1);
+    todo!()
 }
