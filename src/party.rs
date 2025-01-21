@@ -18,14 +18,14 @@ nest!(
         pub state:
             #[derive(PartialEq, Eq)]
             pub enum PartyState {
+                #[default(amount: 0, greet: false)]
+                IncomingGuest{amount: u8, greet: bool},
+                AbilityState(AbilityType),
+                ViewingRolodex,
+                FullHouseUnusedAbility,
                 TooMuchTrouble,
                 Overcrowded,
                 EndedSuccessfully,
-                #[default(amount: 0, greet: false)]
-                IncomingGuest{amount: u8, greet: bool},
-                FullHouseUnusedAbility,
-                AbilityState(AbilityType),
-                ViewingRolodex
             },
     }
 );

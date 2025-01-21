@@ -15,10 +15,6 @@ nest!(
         pub popularity: ClampedI8,
         #[default(ClampedI8::pop_cash(0))]
         pub cash: ClampedI8,
-        pub trouble_base: bool,
-        pub trouble: bool,
-        pub chill_base: bool,
-        pub chill: bool,
         #[default(ClampedI8::stars(0))]
         pub stars: ClampedI8,
         pub tagalongs: u8,
@@ -26,19 +22,17 @@ nest!(
         pub bonus_pop: fn(&Party) -> i8,
         #[default(|_| 0)] 
         pub bonus_cash: fn(&Party) -> i8,
-        pub arrived_already_today: bool,
         #[default(|_| ())]
         pub entrance_effect: fn(&mut Self),
+        
+        pub trouble_base: bool,
+        pub trouble: bool,
+        
+        pub chill_base: bool,
+        pub chill: bool,
+        
         pub ability_base: u8,
         pub ability_stock: u8,
-        pub full_house_ability:
-            #[derive(PartialEq, Eq)]
-            pub enum FullHouseAbilityCondition {
-                Yes,
-                IfYesIsPresent,
-                #[default]
-                No,
-            },
         pub ability_type: 
             #[derive(PartialEq, Eq)]
             pub enum AbilityType {
@@ -63,6 +57,15 @@ nest!(
                 Peek,
                 Greet,
             },
+        pub full_house_ability:
+            #[derive(PartialEq, Eq)]
+            pub enum FullHouseAbilityCondition {
+                Yes,
+                IfYesIsPresent,
+                #[default]
+                No,
+            },
+        
         pub guest_type: 
             #[allow(non_camel_case_types)]
             #[derive(PartialEq, Eq, Hash)]

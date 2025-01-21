@@ -237,11 +237,8 @@ pub fn init_scenerio(num_players: usize) -> Store {
 }
 
 pub fn init_party(party: &mut Party, player: &mut Player, star_guest_arrivals_for_win: usize) {
-    if let Some(bg) = &player.banned.guest {
-        if player.banned.already_served_time {
-            player.rolodex.push(bg.clone());
-            player.banned.guest = None;
-        }
+    if player.banned.guest.is_some() && player.banned.already_served_time {
+        player.rolodex.push(player.banned.guest.take().unwrap());
     }
     player.banned.already_served_time = true;
     player.rolodex.extend(player.booted.drain(0..));
@@ -249,7 +246,6 @@ pub fn init_party(party: &mut Party, player: &mut Player, star_guest_arrivals_fo
         guest.trouble = guest.trouble_base;
         guest.chill = guest.chill_base;
         guest.ability_stock = guest.ability_base;
-        guest.arrived_already_today = false;
     }
     *party = Party {
         capacity: player.capacity.clone(),

@@ -40,27 +40,25 @@ fn main() {
     'game: loop {
         clear().unwrap();
         for player in players.iter_mut() {
+            macro_rules! refresh {
+                (party $boxed_message:expr) => {
+                    party_display(party, player, victories, $boxed_message.to_string());
+                };
+                (store $boxed_message:expr) => {
+                    store_display(store, player, $boxed_message.to_string())
+                };
+            }
             init_party(&mut party, player, star_guest_arrivals_for_win);
             'ongoing_party: loop {
-                macro_rules! refresh {
-                    (party $boxed_message:expr) => {
-                        party_display(party, player, victories, $boxed_message.to_string());
-                    };
-                    (store $boxed_message:expr) => {
-                        store_display(store, player, $boxed_message.to_string())
-                    };
-                }
+                let (
+                    house_is_full,
+                    rolodex_is_empty,
+                    available_full_house_abilities,
+                    replenishes_available,
+                ) = get_party_state(&party, player);
                 'evaluate_party: {
-                    let (
-                        house_is_full,
-                        rolodex_is_empty,
-                        available_full_house_abilities,
-                        replenishes_available,
-                    ) = get_party_state(&party, player);
-
                     match party.state.clone() {
                         IncomingGuest { mut amount, greet } if amount >= 1 => {
-                            // Let a new guest into the party.
                             if player.rolodex.is_empty() {
                                 party.state = IncomingGuest {
                                     amount: 0,
@@ -115,12 +113,6 @@ fn main() {
                                     },
                                     0 => unreachable!(),
                                 };
-                                if check_for_party_end_conditions(
-                                    &mut party,
-                                    house_is_full || rolodex_is_empty,
-                                ) {
-                                    break 'ongoing_party;
-                                }
                                 continue 'ongoing_party;
                             }
                         }
@@ -194,19 +186,19 @@ fn main() {
                             todo!()
                         },
 
-                        _ => {
-                            if (house_is_full || rolodex_is_empty) && (available_full_house_abilities || replenishes_available) {
-                                party.state = FullHouseUnusedAbility
-                            }
-                            if check_for_party_end_conditions(
-                                &mut party,
-                                house_is_full || rolodex_is_empty,
-                            ) {
-                                break 'ongoing_party;
-                            }
-                            todo!()
-                        }
+                        _ => {}
                     }
+
+                    if (house_is_full || rolodex_is_empty) && (available_full_house_abilities || replenishes_available) {
+                        party.state = FullHouseUnusedAbility
+                    }
+                    if check_for_party_end_conditions(
+                        &mut party,
+                        house_is_full || rolodex_is_empty,
+                    ) {
+                        break 'ongoing_party;
+                    }
+                    todo!()
                 }
 
                 'party_input: loop {
@@ -254,7 +246,10 @@ fn main() {
                     }
                     _ => unreachable!(),
                 }
-                player.rolodex.extend(party.attendees.drain(0..))
+                player.rolodex.extend(party.attendees.drain(0..));
+                if let Some(peek) = party.peek_slot.take() {
+                    player.rolodex.push(peek);
+                }
             }
 
             'store: {
