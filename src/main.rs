@@ -18,7 +18,10 @@ mod store;
 use clearscreen::clear;
 use guest::Guest;
 use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng};
-use std::{cmp::{min, Reverse}, io::stdin};
+use std::{
+    cmp::{min, Reverse},
+    io::stdin,
+};
 use {
     display::*,
     guest::{AbilityType::*, FullHouseAbilityCondition::*, GuestType::*},
@@ -171,11 +174,7 @@ fn main() {
                             }
 
                             Summoning => {
-                                if !(house_is_full || rolodex_is_empty) {
-                                    todo!()
-                                } else {
-                                    todo!()
-                                }
+                                todo!();
                                 party.state = IncomingGuest {
                                     amount: 0,
                                     greet: false,
@@ -192,9 +191,27 @@ fn main() {
                             if let Some(banned) = &player.banned.guest {
                                 booted_view.push(&banned)
                             };
-                            rolodex_view.sort_by_key(|guest| (guest.sort_value, Reverse(*guest.popularity), Reverse(*guest.cash)));
-                            attendees_view.sort_by_key(|guest| (guest.sort_value, Reverse(*guest.popularity), Reverse(*guest.cash)));
-                            booted_view.sort_by_key(|guest| (guest.sort_value, Reverse(*guest.popularity), Reverse(*guest.cash)));
+                            rolodex_view.sort_by_key(|guest| {
+                                (
+                                    guest.sort_value,
+                                    Reverse(*guest.popularity),
+                                    Reverse(*guest.cash),
+                                )
+                            });
+                            attendees_view.sort_by_key(|guest| {
+                                (
+                                    guest.sort_value,
+                                    Reverse(*guest.popularity),
+                                    Reverse(*guest.cash),
+                                )
+                            });
+                            booted_view.sort_by_key(|guest| {
+                                (
+                                    guest.sort_value,
+                                    Reverse(*guest.popularity),
+                                    Reverse(*guest.cash),
+                                )
+                            });
                             todo!()
                         }
 
@@ -221,19 +238,88 @@ fn main() {
                     }
                     match input.trim() {
                         "h" => {
-                            party.state = IncomingGuest { amount: 1, greet: false };
+                            party.state = IncomingGuest {
+                                amount: 1,
+                                greet: false,
+                            };
                             break 'party_input;
-                        },
+                        }
                         "r" => {
                             party.state = ViewingRolodex;
                             break 'party_input;
-                        },
+                        }
                         "e" => {
-                            party.state = EndedSuccessfully;
-                            break 'party_input;
-                        },
-                        i if i.parse::<u8>().map_or(false, |n| (1..=34).contains(&n)) => todo!(),
-                        _ => println!("Invalid Input. Please input \"h\" to open the door, \"r\" to see your rolodex, \"e\" to end the party, or an integer from 1 to 34 to use an attendee's ability.")
+                            if party.attendees.len() > 0 || (rolodex_is_empty && party.peek_slot.is_none()) {
+                                party.state = EndedSuccessfully;
+                                break 'party_input;
+                            } else {
+                                println!("Don't end the party yet! This place is dead!");
+                                continue 'party_input;
+                            }
+                        }
+                        "b" => {
+                            if party.peek_slot.is_some() {
+                                player.booted.push(party.peek_slot.take().unwrap());
+                                party.state = IncomingGuest {
+                                    amount: 0,
+                                    greet: false,
+                                };
+                                break 'party_input;
+                            } else {
+                                println!("No one is at the front door!");
+                                continue 'party_input;
+                            }
+                        }
+                        i if i.parse::<usize>().map_or(false, |n| {
+                            (1..=34).contains(&n) && n <= *party.capacity as usize
+                        }) =>
+                        {
+                            let idx = i.parse::<usize>().unwrap() - 1;
+                            if party.attendees[idx].ability_type == NoAbility {
+                                println!("This guest does not have an ability. Please select a different guest to use their ability.");
+                                continue 'party_input;
+                            }
+                            if party.attendees[idx].ability_stock < 1 {
+                                println!("This guest's ability isn't available. Please select a different guest to use their ability.");
+                                continue 'party_input;
+                            }
+                            match party.attendees[idx].ability_type {
+                                Evac | Cheer | Quench => {
+                                    party.state = AbilityState(party.attendees[idx].ability_type);
+                                    break 'party_input;
+                                },
+                                Greet => todo!(),
+                                Peek => match (
+                                    party.peek_slot,
+                                    rolodex_is_empty
+                                ) {
+                                    (None, true) => {
+                                        println!("Rolodex is empty, no one left to invite!");
+                                        continue 'party_input;
+                                    },
+                                    (None, false) => {
+                                        party.peek_slot = Some(player.rolodex.pop().unwrap());
+                                        party.state = IncomingGuest { amount: 0, greet: false };
+                                        break 'party_input;
+                                    },
+                                    (Some(_), _) => {
+                                        println!("Someone is already at the front door!");
+                                        continue 'party_input;
+                                    },
+                                },
+                                Shutter => todo!(),
+                                Style(_) => todo!(),
+                                StarSwap => todo!(),
+                                Boot => todo!(),
+                                LoveArrow => todo!(),
+                                Summoning => todo!(),
+                                NoAbility => unreachable!(),
+                            }
+                        }
+                        _ => {
+                            println!("Invalid Input {}", input.trim());
+                            continue 'party_input;
+                        }
                     }
                 }
             }

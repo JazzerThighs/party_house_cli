@@ -118,6 +118,13 @@ pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxe
         }
         println!("Last Chance!\n");
     }
+    println!("Controls:\n \"h\" => open the door\n \"r\" => view your rolodex\n \"e\" => End the party\n{}\n Integers 1..={} => Use that attendee's ability", 
+        match party.peek_slot {
+            Some(_) => "\"b\" => Boot the guest at the front door",
+            None => ""
+        },
+        *party.capacity
+    );
     for i in 0..*party.capacity { todo!() }
 }
 
