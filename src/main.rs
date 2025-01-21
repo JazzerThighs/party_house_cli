@@ -58,14 +58,8 @@ fn main() {
                         replenishes_available,
                     ) = get_party_state(&party, player);
 
-                    match (
-                        party.state.clone(),
-                        house_is_full,
-                        rolodex_is_empty,
-                        available_full_house_abilities,
-                        replenishes_available,
-                    ) {
-                        (IncomingGuest { mut amount, greet }, _, _, _, _) if amount >= 1 => {
+                    match party.state.clone() {
+                        IncomingGuest { mut amount, greet } if amount >= 1 => {
                             // Let a new guest into the party.
                             if player.rolodex.is_empty() {
                                 party.state = IncomingGuest {
@@ -74,7 +68,7 @@ fn main() {
                                 };
                                 continue 'ongoing_party;
                             } else {
-                                if let Some(next_in_line) = party.peek_slot.take() { 
+                                if let Some(next_in_line) = party.peek_slot.take() {
                                     party.attendees.push(next_in_line);
                                 } else {
                                     party.attendees.push(player.rolodex.pop().unwrap())
@@ -131,89 +125,86 @@ fn main() {
                             }
                         }
 
-                        (AbilityState(a), _, _, _, _) => match a {
-                            Shutter | Style(_) | StarSwap | Boot | LoveArrow | Cheer => {
+                        AbilityState(a) => match a {
+                            Shutter | Style(_) | StarSwap | Boot | LoveArrow => {
                                 // get input to select the attendee that will be affected by the ability
                                 todo!()
                             }
-                            Evac => {
+
+                            Cheer | Evac | Quench | Peek | Greet => {
                                 party.attendees[party.attendee_ability_source].ability_stock -= 1;
-                                player.rolodex.extend(party.attendees.drain(0..));
-                                let mut rng = thread_rng();
-                                player.rolodex.shuffle(&mut rng);
-                                party.state = IncomingGuest {
-                                    amount: 0,
-                                    greet: false,
-                                };
-                                continue 'ongoing_party;
-                            }
-                            Quench => {
-                                party.attendees[party.attendee_ability_source].ability_stock -= 1;
-                                for p in party.attendees.iter_mut() {
-                                    p.trouble = false;
-                                }
-                                party.state = IncomingGuest {
-                                    amount: 0,
-                                    greet: false,
-                                };
-                                continue 'ongoing_party;
-                            }
-                            Peek | Greet | Summoning => {
                                 let (mut amount, mut greet): (u8, bool) = (0, false);
-                                if !(house_is_full || rolodex_is_empty) {
-                                    match a {
-                                        Peek => {
-                                            if party.peek_slot.is_none() {
-                                                party.attendees[party.attendee_ability_source]
-                                                    .ability_stock -= 1;
-                                                party.peek_slot =
-                                                    Some(player.rolodex.pop().unwrap())
-                                            } else {
-                                                todo!()
-                                            }
+                                match a {
+                                    Cheer => {
+                                        for p in party
+                                            .attendees
+                                            .iter_mut()
+                                            .filter(|g| g.ability_type != Cheer)
+                                        {
+                                            p.ability_stock = p.ability_base;
                                         }
-                                        Greet => {
-                                            party.attendees[party.attendee_ability_source]
-                                                .ability_stock -= 1;
-                                            amount = 1;
-                                            greet = true;
-                                        }
-                                        Summoning => {
-                                            // show a list of people from the rolodex who aren't banned
-                                            todo!()
-                                        }
-                                        _ => unreachable!(),
                                     }
-                                }
+                                    Evac => {
+                                        player.rolodex.extend(party.attendees.drain(0..));
+                                        let mut rng = thread_rng();
+                                        player.rolodex.shuffle(&mut rng);
+                                    }
+                                    Quench => {
+                                        for p in party.attendees.iter_mut() {
+                                            p.trouble = false;
+                                        }
+                                    }
+                                    Peek => {
+                                        party.attendees[party.attendee_ability_source].ability_stock -= 1;
+                                        party.peek_slot = Some(player.rolodex.pop().unwrap());
+                                    }
+                                    Greet => {
+                                        amount = 1;
+                                        greet = true;
+                                    }
+                                    _ => unreachable!(),
+                                };
                                 party.state = IncomingGuest { amount, greet };
+                                continue 'ongoing_party;
+                            },
+
+                            Summoning => {
+                                if !(house_is_full || rolodex_is_empty) {
+                                    todo!()
+                                } else {
+                                    todo!()
+                                }
+                                party.state = IncomingGuest {
+                                    amount: 0,
+                                    greet: false
+                                };
                                 continue 'ongoing_party;
                             }
                             NoAbility => unreachable!(),
                         },
 
-                        (_, true, _, true, _)
-                        | (_, true, _, _, true)
-                        | (_, _, true, true, _)
-                        | (_, _, true, _, true) => party.state = FullHouseUnusedAbility,
-
-                        (ViewingRolodex, _, _, _, _) => {
+                        ViewingRolodex => {
                             let mut rolodex_view: Vec<&Guest> = player.rolodex.iter().collect();
                             let mut attendees_view: Vec<&Guest> = party.attendees.iter().collect();
                             let mut booted_view: Vec<&Guest> = player.booted.iter().collect();
-                            // if let Some(banned) = &player.banned.guest { booted_view.push(&banned) };
+                            if let Some(banned) = &player.banned.guest { booted_view.push(&banned) };
                             rolodex_view.sort_by_key(|guest| guest.sort_value);
                             attendees_view.sort_by_key(|guest| guest.sort_value);
                             booted_view.sort_by_key(|guest| guest.sort_value);
                             todo!()
-                        }
+                        },
 
-                        (_, _, _, _, _) => {
+                        _ => {
+                            if (house_is_full || rolodex_is_empty) && (available_full_house_abilities || replenishes_available) {
+                                party.state = FullHouseUnusedAbility
+                            }
                             if check_for_party_end_conditions(
                                 &mut party,
                                 house_is_full || rolodex_is_empty,
                             ) {
                                 break 'ongoing_party;
                             }
+                            todo!()
                         }
                     }
                 }
@@ -324,7 +315,7 @@ fn main() {
         for i in 0..victories.len() {
             match victories[i] {
                 true => println!("Player {} is the Party Master! Win!", i + 1),
-                false => {},
+                false => {}
             }
             println!("Everyone else loses! All of their vibes were way off!")
         }
