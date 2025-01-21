@@ -18,7 +18,7 @@ mod store;
 use clearscreen::clear;
 use guest::Guest;
 use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng};
-use std::{cmp::min, io::stdin};
+use std::{cmp::{min, Reverse}, io::stdin};
 use {
     display::*,
     guest::{AbilityType::*, FullHouseAbilityCondition::*, GuestType::*},
@@ -113,6 +113,12 @@ fn main() {
                                     },
                                     0 => unreachable!(),
                                 };
+                                if check_for_party_end_conditions(
+                                    &mut party,
+                                    house_is_full || rolodex_is_empty,
+                                ) {
+                                    break 'ongoing_party;
+                                }
                                 continue 'ongoing_party;
                             }
                         }
@@ -138,6 +144,9 @@ fn main() {
                                     }
                                     Evac => {
                                         player.rolodex.extend(party.attendees.drain(0..));
+                                        if let Some(peek) = party.peek_slot.take() {
+                                            player.rolodex.push(peek);
+                                        }
                                         let mut rng = thread_rng();
                                         player.rolodex.shuffle(&mut rng);
                                     }
@@ -147,7 +156,8 @@ fn main() {
                                         }
                                     }
                                     Peek => {
-                                        party.attendees[party.attendee_ability_source].ability_stock -= 1;
+                                        party.attendees[party.attendee_ability_source]
+                                            .ability_stock -= 1;
                                         party.peek_slot = Some(player.rolodex.pop().unwrap());
                                     }
                                     Greet => {
@@ -158,7 +168,7 @@ fn main() {
                                 };
                                 party.state = IncomingGuest { amount, greet };
                                 continue 'ongoing_party;
-                            },
+                            }
 
                             Summoning => {
                                 if !(house_is_full || rolodex_is_empty) {
@@ -168,7 +178,7 @@ fn main() {
                                 }
                                 party.state = IncomingGuest {
                                     amount: 0,
-                                    greet: false
+                                    greet: false,
                                 };
                                 continue 'ongoing_party;
                             }
@@ -179,23 +189,25 @@ fn main() {
                             let mut rolodex_view: Vec<&Guest> = player.rolodex.iter().collect();
                             let mut attendees_view: Vec<&Guest> = party.attendees.iter().collect();
                             let mut booted_view: Vec<&Guest> = player.booted.iter().collect();
-                            if let Some(banned) = &player.banned.guest { booted_view.push(&banned) };
-                            rolodex_view.sort_by_key(|guest| guest.sort_value);
-                            attendees_view.sort_by_key(|guest| guest.sort_value);
-                            booted_view.sort_by_key(|guest| guest.sort_value);
+                            if let Some(banned) = &player.banned.guest {
+                                booted_view.push(&banned)
+                            };
+                            rolodex_view.sort_by_key(|guest| (guest.sort_value, Reverse(*guest.popularity), Reverse(*guest.cash)));
+                            attendees_view.sort_by_key(|guest| (guest.sort_value, Reverse(*guest.popularity), Reverse(*guest.cash)));
+                            booted_view.sort_by_key(|guest| (guest.sort_value, Reverse(*guest.popularity), Reverse(*guest.cash)));
                             todo!()
-                        },
+                        }
 
                         _ => {}
                     }
 
-                    if (house_is_full || rolodex_is_empty) && (available_full_house_abilities || replenishes_available) {
+                    if (house_is_full || rolodex_is_empty)
+                        && (available_full_house_abilities || replenishes_available)
+                    {
                         party.state = FullHouseUnusedAbility
                     }
-                    if check_for_party_end_conditions(
-                        &mut party,
-                        house_is_full || rolodex_is_empty,
-                    ) {
+                    if check_for_party_end_conditions(&mut party, house_is_full || rolodex_is_empty)
+                    {
                         break 'ongoing_party;
                     }
                     todo!()
