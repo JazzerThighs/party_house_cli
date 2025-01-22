@@ -1,3 +1,4 @@
+use std::io::*;
 use clearscreen::clear;
 use crate::{
     guest::{AbilityType::*, FullHouseAbilityCondition::*, GuestType::*, *},
@@ -5,6 +6,16 @@ use crate::{
     party::{PartyState::*, *},
     store::*, Player,
 };
+
+pub fn pause_for_enter(prompt: &str) {
+    print!("{}", prompt);
+    // Flush the output so it prints immediately without waiting for a newline
+    stdout().flush().unwrap();
+
+    let mut buffer = String::new();
+    // This will block until user presses Enter
+    stdin().read_line(&mut buffer).unwrap();
+}
 
 const fn guest_type_display(guesttype: &GuestType) -> &str {
     match guesttype {
@@ -61,12 +72,12 @@ const fn ability_type_display(ability_type: &AbilityType) -> &str {
     match ability_type {
         NoAbility => "",
         Evac => "🔥",
-        Shutter => "📸",
-        Style(x) => "⬆️{x}",
+        Shutter(_) => "📸",
+        Style(_) => "⬆️",
         Quench => "🧯",
-        StarSwap => "🔄",
-        Boot => "🥾",
-        LoveArrow => "💘",
+        StarSwap(_) => "🔄",
+        Boot(_) => "🥾",
+        LoveArrow(_) => "💘",
         Cheer => "🎊",
         Summoning => "⬇️",
         Peek => "👀",
@@ -118,14 +129,33 @@ pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxe
         }
         println!("Last Chance!\n");
     }
-    println!("Controls:\n \"h\" => open the door\n \"r\" => view your rolodex\n \"e\" => End the party\n{}\n Integers 1..={} => Use that attendee's ability", 
+    print!(
+        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n\n", 
+        "\"h\" => open the door",
+        "\"r\" => view your rolodex",
+        "\"e\" => End the party",
         match party.peek_slot {
             Some(_) => "\"b\" => Boot the guest at the front door",
             None => ""
         },
-        *party.capacity
+        match party.ability_state {
+            true => "\"n\" => Decide not to use the currently selected ability",
+            false => ""
+        },
+        "Integers 1..=",
+        *party.capacity,
+        "=> Use that attendee's ability"
     );
-    for i in 0..*party.capacity { todo!() }
+    for i in 0..*party.capacity as usize { 
+        println!(
+            "{:>2}. {}",
+            i + 1,
+            match i < party.attendees.len() {
+                true => display_attendee(&party.attendees[i]),
+                false => "".to_string()
+            }
+        );
+    }
 }
 
 pub fn store_display(store: Store, player: &Player, boxed_message: String) {

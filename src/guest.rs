@@ -38,21 +38,14 @@ nest!(
             pub enum AbilityType {
                 #[default]
                 NoAbility,
-                
-                // Determine if an ability is still able to be used when the house is full (or, alternatively, when the player's rolodex is empty.)
-                // Able to be used when house is full:
                 Evac,
-                Shutter,
-                Style(i8),
                 Quench,
-                StarSwap,
-                Boot,
-                LoveArrow,
-
-                // Able to be used when the house is full and there is at least 1 guest who has a full house ability in the party:
                 Cheer,
-                
-                // Not able to be used when house is full:
+                Shutter(usize),
+                Style(usize),
+                StarSwap(usize),
+                Boot(usize),
+                LoveArrow(usize),
                 Summoning,
                 Peek,
                 Greet,
@@ -197,7 +190,7 @@ pub fn guest_lists() -> (
         emoji: '👮',
         cost: 4,
         full_house_ability: Yes,
-        ability_type: Boot,
+        ability_type: Boot(0),
         ability_base: 1,
     );
     insert_guest!(
@@ -319,7 +312,7 @@ pub fn guest_lists() -> (
         cost: 9,
         popularity: ClampedI8::pop_cash(2),
         full_house_ability: Yes,
-        ability_type: Boot,
+        ability_type: Boot(0),
         ability_base: 1,
     );
     insert_guest!(
@@ -378,7 +371,7 @@ pub fn guest_lists() -> (
         popularity: ClampedI8::pop_cash(1),
         cash: ClampedI8::pop_cash(-1),
         full_house_ability: Yes,
-        ability_type: Shutter,
+        ability_type: Shutter(0),
         ability_base: 1,
     );
     insert_guest!(
@@ -450,7 +443,7 @@ pub fn guest_lists() -> (
         cost: 8,
         popularity: ClampedI8::pop_cash(1),
         full_house_ability: Yes,
-        ability_type: LoveArrow,
+        ability_type: LoveArrow(0),
         ability_base: 1,
     );
     insert_guest!(
@@ -461,7 +454,7 @@ pub fn guest_lists() -> (
         cost: 5,
         popularity: ClampedI8::pop_cash(1),
         full_house_ability: Yes,
-        ability_type: StarSwap,
+        ability_type: StarSwap(0),
         ability_base: 1,
     );
     insert_guest!(
@@ -491,7 +484,7 @@ pub fn guest_lists() -> (
         cost: 7,
         cash: ClampedI8::pop_cash(-1),
         full_house_ability: Yes,
-        ability_type: Style(1),
+        ability_type: Style(0),
         ability_base: 1,
     );
     insert_guest!(
@@ -588,7 +581,7 @@ pub fn guest_lists() -> (
         cost: 45,
         stars: ClampedI8::stars(1),
         full_house_ability: Yes,
-        ability_type: Boot,
+        ability_type: Boot(0),
         ability_base: 1,
     );
 

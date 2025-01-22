@@ -15,6 +15,7 @@ nest!(
         pub star_guest_arrivals_for_win: usize,
         pub attendee_ability_source: usize,
         pub peek_slot: Option<Guest>,
+        pub ability_state: bool,
         pub state:
             #[derive(PartialEq, Eq)]
             pub enum PartyState {
