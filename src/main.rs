@@ -59,7 +59,7 @@ fn main() {
                     replenishes_available,
                 ) = get_party_state(&party, player);
                 'evaluate_party: {
-                    match party.state.clone() {
+                    match party.state {
                         IncomingGuest { mut amount, greet } if amount >= 1 => {
                             if player.rolodex.is_empty() {
                                 party.state = IncomingGuest {
@@ -124,143 +124,6 @@ fn main() {
                                 continue 'ongoing_party;
                             }
                         }
-
-                        AbilityState(a) => match a {
-                            Shutter(target) => {
-                                player.add_pop_from_guest(*party.attendees[target].popularity);
-                                player.add_cash_from_guest(*party.attendees[target].cash);
-                                player.add_pop_from_guest((party.attendees[target].bonus_pop)(
-                                    &party,
-                                ));
-                                if party.attendees[target].guest_type == DANCER {
-                                    player.add_pop_from_guest(min(
-                                        16,
-                                        party
-                                            .attendees
-                                            .iter()
-                                            .filter(|a| a.guest_type == DANCER)
-                                            .count()
-                                            .pow(2) as i8,
-                                    ))
-                                };
-                                player.add_cash_from_guest((party.attendees[target].bonus_cash)(
-                                    &party,
-                                ));
-                                party.state = IncomingGuest {
-                                    amount: 0,
-                                    greet: false,
-                                };
-                                continue 'ongoing_party;
-                            }
-                            Style(target) => {
-                                party.attendees[target].popularity += 1;
-                                party.state = IncomingGuest {
-                                    amount: 0,
-                                    greet: false,
-                                };
-                                continue 'ongoing_party;
-                            }
-                            StarSwap(target) => {
-                                todo!();
-                                party.state = IncomingGuest {
-                                    amount: 0,
-                                    greet: false,
-                                };
-                                continue 'ongoing_party;
-                            }
-                            Boot(target) => {
-                                player.booted.push(party.attendees[target].clone());
-                                party.attendees.remove(target);
-                                party.state = IncomingGuest {
-                                    amount: 0,
-                                    greet: false,
-                                };
-                                continue 'ongoing_party;
-                            }
-                            LoveArrow(target) => {
-                                player.booted.push(party.attendees[target].clone());
-                                player.booted.push(party.attendees[target + 1].clone());
-                                party.attendees.remove(target);
-                                party.attendees.remove(target);
-                                party.state = IncomingGuest {
-                                    amount: 0,
-                                    greet: false,
-                                };
-                                continue 'ongoing_party;
-                            }
-
-                            Cheer | Evac | Quench | Peek | Greet => {
-                                let (mut amount, mut greet): (u8, bool) = (0, false);
-                                match a {
-                                    Cheer => {
-                                        for p in party
-                                            .attendees
-                                            .iter_mut()
-                                            .filter(|g| g.ability_type != Cheer)
-                                        {
-                                            p.ability_stock = p.ability_base;
-                                        }
-                                    }
-                                    Evac => {
-                                        player.rolodex.extend(party.attendees.drain(0..));
-                                        if let Some(peek) = party.peek_slot.take() {
-                                            player.rolodex.push(peek);
-                                        }
-                                        let mut rng = thread_rng();
-                                        player.rolodex.shuffle(&mut rng);
-                                    }
-                                    Quench => {
-                                        for p in party.attendees.iter_mut() {
-                                            p.trouble = false;
-                                        }
-                                    }
-                                    Peek => {
-                                        party.peek_slot = Some(player.rolodex.pop().unwrap());
-                                    }
-                                    Greet => {
-                                        amount = 1;
-                                        greet = true;
-                                    }
-                                    _ => unreachable!(),
-                                };
-                                party.state = IncomingGuest { amount, greet };
-                                continue 'ongoing_party;
-                            }
-                            Summoning => unreachable!(),
-                            NoAbility => unreachable!(),
-                        },
-
-                        ViewingRolodex => {
-                            let mut rolodex_view: Vec<&Guest> = player.rolodex.iter().collect();
-                            let mut attendees_view: Vec<&Guest> = party.attendees.iter().collect();
-                            let mut booted_view: Vec<&Guest> = player.booted.iter().collect();
-                            if let Some(banned) = &player.banned.guest {
-                                booted_view.push(&banned)
-                            };
-                            rolodex_view.sort_by_key(|guest| {
-                                (
-                                    guest.sort_value,
-                                    Reverse(*guest.popularity),
-                                    Reverse(*guest.cash),
-                                )
-                            });
-                            attendees_view.sort_by_key(|guest| {
-                                (
-                                    guest.sort_value,
-                                    Reverse(*guest.popularity),
-                                    Reverse(*guest.cash),
-                                )
-                            });
-                            booted_view.sort_by_key(|guest| {
-                                (
-                                    guest.sort_value,
-                                    Reverse(*guest.popularity),
-                                    Reverse(*guest.cash),
-                                )
-                            });
-                            todo!()
-                        }
-
                         _ => {}
                     }
 
@@ -291,7 +154,34 @@ fn main() {
                             break 'party_input;
                         }
                         "r" => {
-                            party.state = ViewingRolodex;
+                            let mut rolodex_view: Vec<&Guest> = player.rolodex.iter().collect();
+                            let mut attendees_view: Vec<&Guest> = party.attendees.iter().collect();
+                            let mut booted_view: Vec<&Guest> = player.booted.iter().collect();
+                            if let Some(banned) = &player.banned.guest {
+                                booted_view.push(&banned)
+                            };
+                            rolodex_view.sort_by_key(|guest| {
+                                (
+                                    guest.sort_value,
+                                    Reverse(*guest.popularity),
+                                    Reverse(*guest.cash),
+                                )
+                            });
+                            attendees_view.sort_by_key(|guest| {
+                                (
+                                    guest.sort_value,
+                                    Reverse(*guest.popularity),
+                                    Reverse(*guest.cash),
+                                )
+                            });
+                            booted_view.sort_by_key(|guest| {
+                                (
+                                    guest.sort_value,
+                                    Reverse(*guest.popularity),
+                                    Reverse(*guest.cash),
+                                )
+                            });
+                            todo!();
                             break 'party_input;
                         }
                         "e" => {
@@ -327,12 +217,45 @@ fn main() {
                                 println!("This guest's ability isn't available. Please select a different guest to use their ability.");
                                 continue 'party_input;
                             }
-                            party.attendee_ability_source = idx;
                             match party.attendees[idx].ability_type {
-                                Evac | Cheer | Quench => {
-                                    party.attendees[party.attendee_ability_source].ability_stock -=
-                                        1;
-                                    party.state = AbilityState(party.attendees[idx].ability_type);
+                                Evac => {
+                                    party.attendees[idx].ability_stock -= 1;
+                                    player.rolodex.extend(party.attendees.drain(0..));
+                                    if let Some(peek) = party.peek_slot.take() {
+                                        player.rolodex.push(peek);
+                                    }
+                                    let mut rng = thread_rng();
+                                    player.rolodex.shuffle(&mut rng);
+                                    party.state = IncomingGuest {
+                                        amount: 0,
+                                        greet: false,
+                                    };
+                                    break 'party_input;
+                                }
+                                Cheer => {
+                                    party.attendees[idx].ability_stock -= 1;
+                                    for p in party
+                                        .attendees
+                                        .iter_mut()
+                                        .filter(|g| g.ability_type != Cheer)
+                                    {
+                                        p.ability_stock = p.ability_base;
+                                    }
+                                    party.state = IncomingGuest {
+                                        amount: 0,
+                                        greet: false,
+                                    };
+                                    break 'party_input;
+                                }
+                                Quench => {
+                                    party.attendees[idx].ability_stock -= 1;
+                                    for p in party.attendees.iter_mut() {
+                                        p.trouble = false;
+                                    }
+                                    party.state = IncomingGuest {
+                                        amount: 0,
+                                        greet: false,
+                                    };
                                     break 'party_input;
                                 }
                                 Peek => match (party.peek_slot, rolodex_is_empty) {
@@ -345,14 +268,140 @@ fn main() {
                                         continue 'party_input;
                                     }
                                     (None, false) => {
-                                        party.attendees[party.attendee_ability_source]
-                                            .ability_stock -= 1;
-                                        party.state = AbilityState(Peek);
+                                        party.attendees[idx].ability_stock -= 1;
+                                        party.peek_slot = Some(player.rolodex.pop().unwrap());
                                         break 'party_input;
                                     }
                                 },
-                                Shutter(mut target) | Style(mut target) | Boot(mut target) => {
-                                    'target_one_input: loop {
+                                Shutter(mut target) => 'shutter_input: loop {
+                                    let mut input = String::new();
+                                    if let Err(e) = stdin().read_line(&mut input) {
+                                        eprintln!("Error reading input: {}", e);
+                                        continue 'party_input;
+                                    }
+                                    match input.trim() {
+                                        i if i.parse::<usize>().map_or(false, |n| {
+                                            (1..=34).contains(&n) && n <= *party.capacity as usize
+                                        }) =>
+                                        {
+                                            party.attendees[idx].ability_stock -= 1;
+                                            target = i.parse::<usize>().unwrap() - 1;
+                                            player.add_pop_from_guest(
+                                                *party.attendees[target].popularity,
+                                            );
+                                            player
+                                                .add_cash_from_guest(*party.attendees[target].cash);
+                                            player.add_pop_from_guest((party.attendees[target]
+                                                .bonus_pop)(
+                                                &party
+                                            ));
+                                            if party.attendees[target].guest_type == DANCER {
+                                                player.add_pop_from_guest(min(
+                                                    16,
+                                                    party
+                                                        .attendees
+                                                        .iter()
+                                                        .filter(|a| a.guest_type == DANCER)
+                                                        .count()
+                                                        .pow(2)
+                                                        as i8,
+                                                ))
+                                            };
+                                            player.add_cash_from_guest((party.attendees[target]
+                                                .bonus_cash)(
+                                                &party
+                                            ));
+                                            party.state = IncomingGuest {
+                                                amount: 0,
+                                                greet: false,
+                                            };
+                                            break 'party_input;
+                                        }
+                                        "n" => {
+                                            party.state = IncomingGuest {
+                                                amount: 0,
+                                                greet: false,
+                                            };
+                                            break 'party_input;
+                                        }
+                                        _ => {
+                                            println!("Invalid input.");
+                                            continue 'shutter_input;
+                                        }
+                                    }
+                                },
+                                Style(mut target) => 'style_input: loop {
+                                    let mut input = String::new();
+                                    if let Err(e) = stdin().read_line(&mut input) {
+                                        eprintln!("Error reading input: {}", e);
+                                        continue 'party_input;
+                                    }
+                                    match input.trim() {
+                                        i if i.parse::<usize>().map_or(false, |n| {
+                                            (1..=34).contains(&n) && n <= *party.capacity as usize
+                                        }) =>
+                                        {
+                                            party.attendees[idx].ability_stock -= 1;
+                                            target = i.parse::<usize>().unwrap() - 1;
+                                            party.attendees[target].popularity += 1;
+                                            party.state = IncomingGuest {
+                                                amount: 0,
+                                                greet: false,
+                                            };
+                                            break 'party_input;
+                                        }
+                                        "n" => {
+                                            party.state = IncomingGuest {
+                                                amount: 0,
+                                                greet: false,
+                                            };
+                                            break 'party_input;
+                                        }
+                                        _ => {
+                                            println!("Invalid input.");
+                                            continue 'style_input;
+                                        }
+                                    }
+                                },
+                                Boot(mut target) => 'boot_input: loop {
+                                    let mut input = String::new();
+                                    if let Err(e) = stdin().read_line(&mut input) {
+                                        eprintln!("Error reading input: {}", e);
+                                        continue 'party_input;
+                                    }
+                                    match input.trim() {
+                                        i if i.parse::<usize>().map_or(false, |n| {
+                                            (1..=34).contains(&n) && n <= *party.capacity as usize
+                                        }) =>
+                                        {
+                                            party.attendees[idx].ability_stock -= 1;
+                                            target = i.parse::<usize>().unwrap() - 1;
+                                            player.booted.push(party.attendees[target].clone());
+                                            party.attendees.remove(target);
+                                            party.state = IncomingGuest {
+                                                amount: 0,
+                                                greet: false,
+                                            };
+                                            break 'party_input;
+                                        }
+                                        "n" => {
+                                            party.state = IncomingGuest {
+                                                amount: 0,
+                                                greet: false,
+                                            };
+                                            break 'party_input;
+                                        }
+                                        _ => {
+                                            println!("Invalid input.");
+                                            continue 'boot_input;
+                                        }
+                                    }
+                                },
+                                StarSwap(mut target) => match (
+                                    party.attendees.iter().filter(|a| *a.stars > 0).count() > 0,
+                                    player.rolodex.iter().filter(|a| *a.stars > 0).count() > 0,
+                                ) {
+                                    (true, _) | (_, true) => 'target_two_input: loop {
                                         let mut input = String::new();
                                         if let Err(e) = stdin().read_line(&mut input) {
                                             eprintln!("Error reading input: {}", e);
@@ -364,11 +413,31 @@ fn main() {
                                                     && n <= *party.capacity as usize
                                             }) =>
                                             {
-                                                party.attendees[party.attendee_ability_source]
-                                                    .ability_stock -= 1;
+                                                party.attendees[idx].ability_stock -= 1;
                                                 target = i.parse::<usize>().unwrap() - 1;
-                                                party.state =
-                                                    AbilityState(party.attendees[idx].ability_type);
+                                                let replacement: Guest;
+                                                let goes_away: Guest;
+                                                for r in 0..player.rolodex.len() {
+                                                    if *party.attendees[target].stars == 0 {
+                                                        if *player.rolodex[r].stars != 0 {
+                                                            replacement = player.rolodex[r].clone();
+                                                            player.rolodex.remove(r);
+                                                        }
+                                                    } else {
+                                                        if *player.rolodex[r].stars == 0 {
+                                                            replacement = player.rolodex[r].clone();
+                                                            player.rolodex.remove(r);
+                                                        }
+                                                    }
+                                                }
+                                                goes_away = party.attendees[target].clone();
+                                                party.attendees.remove(target);
+                                                party.attendees.insert(target, replacement);
+                                                player.rolodex.push(goes_away);
+                                                party.state = IncomingGuest {
+                                                    amount: party.attendees[target].tagalongs,
+                                                    greet: false,
+                                                };
                                                 break 'party_input;
                                             }
                                             "n" => {
@@ -380,62 +449,21 @@ fn main() {
                                             }
                                             _ => {
                                                 println!("Invalid input.");
-                                                continue 'target_one_input;
+                                                continue 'target_two_input;
                                             }
                                         }
+                                    },
+                                    (false, false) => {
+                                        println!("There are neither any star guests in the rolodex nor the party.");
+                                        continue 'party_input;
                                     }
-                                }
-                                StarSwap(mut target) => {
-                                    match (
-                                        party.attendees.iter().filter(|a| *a.stars > 0).count() > 0,
-                                        player.rolodex.iter().filter(|a| *a.stars > 0).count() > 0,
-                                    ) {
-                                        (true, _) | (_, true) => 'target_two_input: loop {
-                                            let mut input = String::new();
-                                            if let Err(e) = stdin().read_line(&mut input) {
-                                                eprintln!("Error reading input: {}", e);
-                                                continue 'party_input;
-                                            }
-                                            match input.trim() {
-                                                i if i.parse::<usize>().map_or(false, |n| {
-                                                    (1..=34).contains(&n)
-                                                        && n <= *party.capacity as usize
-                                                }) =>
-                                                {
-                                                    party.attendees
-                                                        [party.attendee_ability_source]
-                                                        .ability_stock -= 1;
-                                                    target = i.parse::<usize>().unwrap() - 1;
-                                                    party.state = AbilityState(
-                                                        party.attendees[idx].ability_type,
-                                                    );
-                                                    break 'party_input;
-                                                }
-                                                "n" => {
-                                                    party.state = IncomingGuest {
-                                                        amount: 0,
-                                                        greet: false,
-                                                    };
-                                                    break 'party_input;
-                                                }
-                                                _ => {
-                                                    println!("Invalid input.");
-                                                    continue 'target_two_input;
-                                                }
-                                            }
-                                        },
-                                        (false, false) => {
-                                            println!("There are neither any star guests in the rolodex nor the party.");
-                                            continue 'party_input;
-                                        }
-                                    }
-                                }
+                                },
                                 LoveArrow(mut target) => {
                                     if party.attendees.len() < 2 {
                                         println!("At least 2 partygoers need to be paired up by a Cupid's Arrow.");
                                         continue 'party_input;
                                     }
-                                    'target_three_input: loop {
+                                    'love_arrow_input: loop {
                                         let mut input = String::new();
                                         if let Err(e) = stdin().read_line(&mut input) {
                                             eprintln!("Error reading input: {}", e);
@@ -448,11 +476,18 @@ fn main() {
                                                     && n < *party.capacity as usize
                                             }) =>
                                             {
-                                                party.attendees[party.attendee_ability_source]
-                                                    .ability_stock -= 1;
+                                                party.attendees[idx].ability_stock -= 1;
                                                 target = i.parse::<usize>().unwrap() - 1;
-                                                party.state =
-                                                    AbilityState(party.attendees[idx].ability_type);
+                                                player.booted.push(party.attendees[target].clone());
+                                                player
+                                                    .booted
+                                                    .push(party.attendees[target + 1].clone());
+                                                party.attendees.remove(target);
+                                                party.attendees.remove(target);
+                                                party.state = IncomingGuest {
+                                                    amount: 0,
+                                                    greet: false,
+                                                };
                                                 break 'party_input;
                                             }
                                             "n" => {
@@ -464,12 +499,12 @@ fn main() {
                                             }
                                             _ => {
                                                 println!("Invalid input.");
-                                                continue 'target_three_input;
+                                                continue 'love_arrow_input;
                                             }
                                         }
                                     }
                                 }
-                                Greet | Summoning => match (house_is_full, rolodex_is_empty) {
+                                Greet => match (house_is_full, rolodex_is_empty) {
                                     (true, _) => {
                                         println!("The house is full, cannot invite a new guest!");
                                         continue 'party_input;
@@ -478,75 +513,68 @@ fn main() {
                                         println!("Rolodex is empty, no one left to invite!");
                                         continue 'party_input;
                                     }
-                                    (false, false) => match party.attendees[idx].ability_type {
-                                        Greet => {
-                                            party.attendees[party.attendee_ability_source]
-                                                .ability_stock -= 1;
-                                            party.state =
-                                                AbilityState(party.attendees[idx].ability_type);
+                                    (false, false) => {
+                                        party.attendees[idx].ability_stock -= 1;
+                                        party.state = IncomingGuest {
+                                            amount: 1,
+                                            greet: true,
+                                        };
+                                        continue 'party_input;
+                                    }
+                                },
+                                Summoning => 'summoning_input: loop {
+                                    println!("Select a contact to invite to the party:");
+                                    player.rolodex.sort_by_key(|guest| {
+                                        (
+                                            guest.sort_value,
+                                            Reverse(*guest.popularity),
+                                            Reverse(*guest.cash),
+                                        )
+                                    });
+                                    for contact_num in 0..player.rolodex.len() {
+                                        println!(
+                                            "{:>2}) {}",
+                                            contact_num + 1,
+                                            display_guest(&player.rolodex[contact_num])
+                                        );
+                                    }
+                                    let mut input = String::new();
+                                    if let Err(e) = stdin().read_line(&mut input) {
+                                        eprintln!("Error reading input: {}", e);
+                                        continue 'party_input;
+                                    }
+                                    match input.trim() {
+                                        i if i.parse::<usize>().map_or(false, |n| {
+                                            (1..=player.rolodex.len()).contains(&n)
+                                        }) =>
+                                        {
+                                            party.attendees[idx].ability_stock -= 1;
+                                            let target = i.parse::<usize>().unwrap() - 1;
+                                            party.attendees.push(player.rolodex[target].clone());
+                                            player.rolodex.remove(target);
+                                            let mut rng = thread_rng();
+                                            player.rolodex.shuffle(&mut rng);
+                                            party.state = IncomingGuest {
+                                                amount: party.attendees[party.attendees.len() - 1]
+                                                    .tagalongs,
+                                                greet: false,
+                                            };
                                             break 'party_input;
                                         }
-                                        Summoning => 'summoning_input: loop {
-                                            println!("Select a contact to invite to the party:");
-                                            player.rolodex.sort_by_key(|guest| {
-                                                (
-                                                    guest.sort_value,
-                                                    Reverse(*guest.popularity),
-                                                    Reverse(*guest.cash),
-                                                )
-                                            });
-                                            for contact_num in 0..player.rolodex.len() {
-                                                println!(
-                                                    "{:>2}) {}",
-                                                    contact_num + 1,
-                                                    display_guest(&player.rolodex[contact_num])
-                                                );
-                                            }
-                                            let mut input = String::new();
-                                            if let Err(e) = stdin().read_line(&mut input) {
-                                                eprintln!("Error reading input: {}", e);
-                                                continue 'party_input;
-                                            }
-                                            match input.trim() {
-                                                i if i.parse::<usize>().map_or(false, |n| {
-                                                    (1..=player.rolodex.len()).contains(&n)
-                                                }) =>
-                                                {
-                                                    party.attendees
-                                                        [party.attendee_ability_source]
-                                                        .ability_stock -= 1;
-                                                    let target = i.parse::<usize>().unwrap() - 1;
-                                                    party
-                                                        .attendees
-                                                        .push(player.rolodex[target].clone());
-                                                    player.rolodex.remove(target);
-                                                    let mut rng = thread_rng();
-                                                    player.rolodex.shuffle(&mut rng);
-                                                    party.state = IncomingGuest {
-                                                        amount: party.attendees
-                                                            [party.attendees.len() - 1]
-                                                            .tagalongs,
-                                                        greet: false,
-                                                    };
-                                                    break 'party_input;
-                                                }
-                                                "n" => {
-                                                    let mut rng = thread_rng();
-                                                    player.rolodex.shuffle(&mut rng);
-                                                    party.state = IncomingGuest {
-                                                        amount: 0,
-                                                        greet: false,
-                                                    };
-                                                    break 'party_input;
-                                                }
-                                                _ => {
-                                                    println!("Invalid input.");
-                                                    continue 'summoning_input;
-                                                }
-                                            }
-                                        },
-                                        _ => unreachable!(),
-                                    },
+                                        "n" => {
+                                            let mut rng = thread_rng();
+                                            player.rolodex.shuffle(&mut rng);
+                                            party.state = IncomingGuest {
+                                                amount: 0,
+                                                greet: false,
+                                            };
+                                            break 'party_input;
+                                        }
+                                        _ => {
+                                            println!("Invalid input.");
+                                            continue 'summoning_input;
+                                        }
+                                    }
                                 },
                                 NoAbility => {
                                     println!("This guest does not have an ability. Please select a different guest to use their ability.");
@@ -622,13 +650,13 @@ fn main() {
                                 )
                             });
                             todo!()
-                        },
+                        }
                         "c" => {
                             let cost_of_expansion = match *player.capacity {
                                 5..=15 => *player.capacity - 3,
                                 16..=33 => 12,
                                 34.. => 0,
-                                ..=4 => unreachable!()
+                                ..=4 => unreachable!(),
                             };
                             if cost_of_expansion == 0 {
                                 boxed_message = "Player's capacity is maxed out!".to_string();
@@ -638,10 +666,15 @@ fn main() {
                                 boxed_message = "Not enough cash to upgrade capacity!".to_string();
                             }
                             continue 'store_input;
-                        },
+                        }
                         "e" => break 'store,
-                        i if i.parse::<usize>().map_or(false, |n| (1..=store.len()).contains(&n)) => todo!(),
-                        _ => println!("Invalid Input.")
+                        i if i
+                            .parse::<usize>()
+                            .map_or(false, |n| (1..=store.len()).contains(&n)) =>
+                        {
+                            todo!()
+                        }
+                        _ => println!("Invalid Input."),
                     }
                 }
             }
