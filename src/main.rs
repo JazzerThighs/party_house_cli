@@ -497,9 +497,9 @@ fn main() {
                                             });
                                             for contact_num in 0..player.rolodex.len() {
                                                 println!(
-                                                    "{:>2}. {}",
+                                                    "{:>2}) {}",
                                                     contact_num + 1,
-                                                    display_attendee(&player.rolodex[contact_num])
+                                                    display_guest(&player.rolodex[contact_num])
                                                 );
                                             }
                                             let mut input = String::new();
