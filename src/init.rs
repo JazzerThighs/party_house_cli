@@ -1,7 +1,7 @@
-use crate::{clampedi8::ClampedI8, guest::{GuestType::*, *}, party::*, player::*};
+use crate::{guest::{GuestType::*, *}, party::*, player::*};
 use clearscreen::*;
-use rand::{seq::SliceRandom, thread_rng, Rng};
-use std::{cmp::max, io::stdin};
+use rand::{seq::SliceRandom, thread_rng};
+use std::{f32::INFINITY, cmp::max, io::stdin};
 
 pub fn get_num_players() -> usize {
     loop {
@@ -65,10 +65,10 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
     let num_stocks = get_num_stocks(num_players);
     macro_rules! place {
         (star_guests, $gt: ident) => {
-            (friends[&$gt].clone(), num_stocks)
+            (star_guests[&$gt].clone(), INFINITY)
         };
         ($pile: ident, $gt: ident) => {
-            ($pile[&$gt].clone(), f32::INFINITY)
+            ($pile[&$gt].clone(), num_stocks)
         };
     }
     let mut store = vec![
@@ -176,7 +176,7 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
         print!("{} ", a_magical_night[i].0.emoji);
     }
     print!("\n\n");
-    print!("6 -> Randomized Scenerios\n");
+    print!("6 -> Randomized Scenerio\n");
     loop {
         let mut input = String::new();
         if let Err(e) = stdin().read_line(&mut input) {
@@ -222,8 +222,7 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
                 }
                 break;
             }
-            Ok(_) => eprintln!("Invalid input. Please enter a valid number as displayed."),
-            Err(_) => eprintln!("Invalid input. Please enter a valid number as displayed."),
+            Ok(_) | Err(_) => println!("Invalid input. Please enter a valid number as displayed."),
         }
     }
     clear().unwrap();
@@ -233,7 +232,7 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
     store
 }
 
-pub fn init_party(party: &mut Party, player: &mut Player, star_guest_arrivals_for_win: usize) {
+pub fn init_party(party: &mut Party, player: &mut Player) {
     if player.banned.guest.is_some() && player.banned.already_served_time {
         player.rolodex.push(player.banned.guest.take().unwrap());
     }
@@ -246,7 +245,6 @@ pub fn init_party(party: &mut Party, player: &mut Player, star_guest_arrivals_fo
     }
     *party = Party {
         capacity: player.capacity.clone(),
-        star_guest_arrivals_for_win,
         ..Default::default()
     };
     let mut rng = thread_rng();

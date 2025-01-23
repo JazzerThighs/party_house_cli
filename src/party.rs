@@ -1,6 +1,4 @@
-use std::cmp::min;
-
-use crate::{clampedi8::*, guest::{GuestType::* ,*}, player::*};
+use crate::{clampedi8::*, guest::*, player::*};
 use better_default::Default;
 use nestify::nest;
 
@@ -10,10 +8,6 @@ nest!(
         pub attendees: Vec<Guest>,
         #[default(ClampedI8::capacity())]
         pub capacity: ClampedI8,
-        pub trouble_count: u8,
-        pub chill_count: u8,
-        pub star_guest_arrivals_for_win: usize,
-        pub attendee_ability_source: usize,
         pub peek_slot: Option<Guest>,
         pub ability_state: bool,
         pub state:

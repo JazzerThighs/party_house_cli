@@ -30,7 +30,7 @@ impl Player {
     pub fn add_cash_from_guest(&mut self, amount: i8) {
         let mut c: i8 = *(self.cash.clone() + amount);
         while c < 0 {
-            self.popularity += -7;
+            self.popularity -= 7;
             c += 1;
         }
         self.cash += amount;

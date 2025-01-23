@@ -1,9 +1,8 @@
-use std::{f64::INFINITY, io::*};
+use std::{io::*, f32::INFINITY};
 use clearscreen::clear;
 use crate::{
-    guest::{AbilityType::*, FullHouseAbilityCondition::*, GuestType::*, *},
-    init::*,
-    party::{PartyState::*, *},
+    guest::{AbilityType::*, GuestType::*, *},
+    party::*,
     player::*,
 };
 
@@ -118,7 +117,7 @@ pub fn display_guest(guest: &Guest) -> String {
     )
 }
 
-pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxed_message: String) {
+pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxed_message: &String) {
     clear().unwrap();
     println!("Player {}, throw a party!", player.id);
     if victories.iter().any(|v| *v) {
@@ -129,6 +128,7 @@ pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxe
         }
         println!("Last Chance!\n");
     }
+    println!("{boxed_message}");
     print!(
         "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n\n", 
         "\"h\" => Open the door",
@@ -154,6 +154,13 @@ pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxe
                 true => display_guest(&party.attendees[i]),
                 false => "".to_string()
             }
+        );
+    }
+    // show that the party overflowed if it did
+    if party.attendees.len() > *party.capacity as usize {
+        println!(
+            "Overflow! {}",
+            display_guest(&party.attendees[party.attendees.len() - 1]),
         );
     }
 }
@@ -185,7 +192,7 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, boxed_message: 
             display_guest(&store[i].0),
             match store[i].1 {
                 0.0 => "Sold Out!".to_string(),
-                f32::INFINITY => format!("∞ => Cost: {}", store[i].0.cost),
+                INFINITY => format!("∞ => Cost: {}", store[i].0.cost),
                 _ => format!("{} => Cost: {}", store[i].1, store[i].0.cost)
             },
         );
