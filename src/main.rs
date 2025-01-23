@@ -1,12 +1,3 @@
-#![allow(
-    dead_code,
-    unused_mut,
-    unused_imports,
-    unused_variables,
-    unused_labels,
-    unused_assignments,
-    unreachable_code
-)]
 mod clampedi8;
 mod display;
 mod guest;
@@ -16,14 +7,14 @@ mod player;
 
 use clearscreen::clear;
 use guest::Guest;
-use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng};
+use rand::{seq::SliceRandom, thread_rng};
 use std::{
     cmp::{min, Reverse},
     io::stdin,
 };
 use {
     display::*,
-    guest::{AbilityType::*, FullHouseAbilityCondition::*, GuestType::*},
+    guest::{AbilityType::*, GuestType::*},
     init::*,
     party::{PartyState::*, *},
     player::*,
@@ -141,7 +132,7 @@ fn main() {
                 ) {
                     break 'ongoing_party;
                 }
-                todo!();
+                // todo!();
 
                 'party_input: loop {
                     let mut input = String::new();
@@ -262,7 +253,7 @@ fn main() {
                                     };
                                     break 'party_input;
                                 }
-                                Peek => match (party.peek_slot, rolodex_is_empty) {
+                                Peek => match (&party.peek_slot, rolodex_is_empty) {
                                     (Some(_), _) => {
                                         println!("Someone is already at the front door!");
                                         continue 'party_input;
@@ -419,18 +410,20 @@ fn main() {
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
                                                 target = i.parse::<usize>().unwrap() - 1;
-                                                let replacement: Guest;
+                                                let mut replacement: Guest = Guest::default();
                                                 let goes_away: Guest;
                                                 for r in 0..player.rolodex.len() {
                                                     if *party.attendees[target].stars == 0 {
                                                         if *player.rolodex[r].stars != 0 {
                                                             replacement = player.rolodex[r].clone();
                                                             player.rolodex.remove(r);
+                                                            break;
                                                         }
                                                     } else {
                                                         if *player.rolodex[r].stars == 0 {
                                                             replacement = player.rolodex[r].clone();
                                                             player.rolodex.remove(r);
+                                                            break;
                                                         }
                                                     }
                                                 }
@@ -594,30 +587,28 @@ fn main() {
                 }
             }
 
-            'handle_party_end: {
-                match party.state {
-                    TooMuchTrouble => {
-                        todo!(); // Cops Came
-                    }
-                    Overcrowded => {
-                        todo!(); // Fire Marshal Came
-                    }
-                    EndedSuccessfully => {
-                        player.end_of_party_score_guests(&party);
-                        if party.attendees.iter().filter(|a| *a.stars == 1).count()
-                            - party.attendees.iter().filter(|a| *a.stars == -1).count()
-                            >= star_guest_arrivals_for_win
-                        {
-                            victories[player.id] = true;
-                            todo!() // Show that the player won
-                        }
-                    }
-                    _ => unreachable!(),
+            match party.state {
+                TooMuchTrouble => {
+                    todo!(); // Cops Came
                 }
-                player.rolodex.extend(party.attendees.drain(0..));
-                if let Some(peek) = party.peek_slot.take() {
-                    player.rolodex.push(peek);
+                Overcrowded => {
+                    todo!(); // Fire Marshal Came
                 }
+                EndedSuccessfully => {
+                    player.end_of_party_score_guests(&party);
+                    if party.attendees.iter().filter(|a| *a.stars == 1).count()
+                        - party.attendees.iter().filter(|a| *a.stars == -1).count()
+                        >= star_guest_arrivals_for_win
+                    {
+                        victories[player.id] = true;
+                        todo!() // Show that the player won
+                    }
+                }
+                _ => unreachable!(),
+            }
+            player.rolodex.extend(party.attendees.drain(0..));
+            if let Some(peek) = party.peek_slot.take() {
+                player.rolodex.push(peek);
             }
 
             'store: {
@@ -684,22 +675,20 @@ fn main() {
             }
         }
 
-        'ending_check: {
-            match num_players {
-                0 => unreachable!(),
-                1 => {
-                    if day_count == 25 || victories[0] {
-                        break 'game;
-                    }
-                }
-                2.. => {
-                    if day_count == 100 || victories.iter().any(|v| *v) {
-                        break 'game;
-                    }
+        match num_players {
+            0 => unreachable!(),
+            1 => {
+                if day_count == 25 || victories[0] {
+                    break 'game;
                 }
             }
-            day_count += 1;
+            2.. => {
+                if day_count == 100 || victories.iter().any(|v| *v) {
+                    break 'game;
+                }
+            }
         }
+        day_count += 1;
     }
 
     clear().unwrap();
