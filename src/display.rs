@@ -1,10 +1,10 @@
-use std::io::*;
+use std::{f64::INFINITY, io::*};
 use clearscreen::clear;
 use crate::{
     guest::{AbilityType::*, FullHouseAbilityCondition::*, GuestType::*, *},
     init::*,
     party::{PartyState::*, *},
-    store::*, Player,
+    player::*,
 };
 
 pub fn pause_for_enter(prompt: &str) {
@@ -85,7 +85,7 @@ const fn ability_type_display(ability_type: &AbilityType) -> &str {
     }
 }
 
-pub fn display_attendee(guest: &Guest) -> String {
+pub fn display_guest(guest: &Guest) -> String {
     format!(
         "{:>10} {:>2} {:>2} {:>2} {:>2} {:>2}",
         guest_type_display(&guest.guest_type),
@@ -131,8 +131,8 @@ pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxe
     }
     print!(
         "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n\n", 
-        "\"h\" => open the door",
-        "\"r\" => view your rolodex",
+        "\"h\" => Open the door",
+        "\"r\" => View your rolodex",
         "\"e\" => End the party",
         match party.peek_slot {
             Some(_) => "\"b\" => Boot the guest at the front door",
@@ -148,18 +148,52 @@ pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxe
     );
     for i in 0..*party.capacity as usize { 
         println!(
-            "{:>2}. {}",
+            "{:>2}) {}",
             i + 1,
             match i < party.attendees.len() {
-                true => display_attendee(&party.attendees[i]),
+                true => display_guest(&party.attendees[i]),
                 false => "".to_string()
             }
         );
     }
 }
 
-pub fn store_display(store: Store, player: &Player, boxed_message: String) {
+pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, boxed_message: String) {
     clear().unwrap();
-    println!("Player {}, spend Pop to add guests to your rolodex; Spend Cash to expand the capacity of your house:\n", player.id + 1);
-    todo!()
+    println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:\n", player.id + 1);
+    println!(
+        "Controls:\n \"c\" to increase the capacity of your house, \"r\" to see your rolodex, \"e\" to finish shopping, or an integer from 1 to 13 to add an available contact to your rolodex."
+    );
+    print!(
+        "Controls:\n {}\n {}\n {}\n {}{} {}\n\n", 
+        "\"r\" => View your rolodex",
+        match *player.capacity {
+            5..=33 => "\"c\" => Increase the capacity of your house",
+            34.. => "",
+            ..=4 => unreachable!()
+        },
+        "\"e\" => Finish Shopping and move on to the next day of partying",
+        "Integers 1..=",
+        store.len(),
+        "=> Add one copy of that contact to your rolodex"
+    );
+    print!("{boxed_message}\n\n");
+    for i in 0..store.len() { 
+        println!(
+            "{:>2}) {} × {}",
+            i + 1,
+            display_guest(&store[i].0),
+            match store[i].1 {
+                0.0 => "Sold Out!".to_string(),
+                f32::INFINITY => format!("∞ => Cost: {}", store[i].0.cost),
+                _ => format!("{} => Cost: {}", store[i].1, store[i].0.cost)
+            },
+        );
+    }
+    match *player.capacity {
+        5..=15 => println!("Upgrade Capacity => Cost: {}", *player.capacity - 3),
+        16..=33 => println!("Upgrade Capacity => Cost: 12"),
+        34.. => println!("House Capacity Maxed Out! (34 Spots Max)"),
+        ..=4 => unreachable!()
+    }
 }

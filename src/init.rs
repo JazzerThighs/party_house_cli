@@ -1,4 +1,4 @@
-use crate::{clampedi8::ClampedI8, guest::{GuestType::*, *}, party::*, player::*, store::*};
+use crate::{clampedi8::ClampedI8, guest::{GuestType::*, *}, party::*, player::*};
 use clearscreen::*;
 use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::{cmp::max, io::stdin};
@@ -60,7 +60,7 @@ const fn get_num_stocks(num_players: usize) -> f32 {
     (4 + (2 * (num_players - 1))) as f32
 }
 
-pub fn init_scenerio(num_players: usize) -> Store {
+pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
     let (friends, randos, star_guests) = guest_lists();
     let num_stocks = get_num_stocks(num_players);
     macro_rules! place {
@@ -230,10 +230,7 @@ pub fn init_scenerio(num_players: usize) -> Store {
     
     store.sort_by(|a, b| a.0.sort_value.cmp(&b.0.sort_value));
     
-    Store {
-        stock: store,
-        done_shopping: false,
-    }
+    store
 }
 
 pub fn init_party(party: &mut Party, player: &mut Player, star_guest_arrivals_for_win: usize) {
