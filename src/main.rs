@@ -592,9 +592,9 @@ fn main() {
                 if !&victories[0..=player.id + 1].iter().any(|v| *v) {
                     break 'store;
                 }
-                let boxed_message: String = "".to_string();
+                let mut boxed_message: String = "".to_string();
                 'store_input: loop {
-                    store_display(&store, player, boxed_message);
+                    store_display(&store, player, &boxed_message);
                     let mut input = String::new();
                     if let Err(e) = stdin().read_line(&mut input) {
                         eprintln!("Error reading input: {}", e);

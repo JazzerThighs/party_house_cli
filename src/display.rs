@@ -158,7 +158,7 @@ pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxe
     }
 }
 
-pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, boxed_message: String) {
+pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, boxed_message: &String) {
     clear().unwrap();
     println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:\n", player.id + 1);
     println!(
