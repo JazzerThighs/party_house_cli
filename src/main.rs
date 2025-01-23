@@ -112,7 +112,13 @@ fn main() {
                                 },
                                 0 => unreachable!(),
                             };
-                            if check_for_party_end_conditions(&mut party, house_is_full, rolodex_is_empty, available_full_house_abilities, replenishes_available) {
+                            if check_for_party_end_conditions(
+                                &mut party,
+                                house_is_full,
+                                rolodex_is_empty,
+                                available_full_house_abilities,
+                                replenishes_available,
+                            ) {
                                 break 'ongoing_party;
                             }
                             continue 'ongoing_party;
@@ -126,7 +132,13 @@ fn main() {
                 {
                     party.state = FullHouseUnusedAbility
                 }
-                if check_for_party_end_conditions(&mut party, house_is_full, rolodex_is_empty, available_full_house_abilities, replenishes_available) {
+                if check_for_party_end_conditions(
+                    &mut party,
+                    house_is_full,
+                    rolodex_is_empty,
+                    available_full_house_abilities,
+                    replenishes_available,
+                ) {
                     break 'ongoing_party;
                 }
                 todo!();
