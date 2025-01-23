@@ -438,12 +438,20 @@ fn main() {
                                                     let goes_away: Guest;
                                                     for r in 0..player.rolodex.len() {
                                                         if *party.attendees[target].stars == 0 {
+                                                            if player.rolodex.iter().filter(|g| *g.stars != 0).count() == 0 {
+                                                                refresh!(party "Cannot swap star guest for non-star guest because your rolodex has no available non-star guests.");
+                                                                continue 'star_swap_input;
+                                                            }
                                                             if *player.rolodex[r].stars != 0 {
                                                                 replacement = player.rolodex[r].clone();
                                                                 player.rolodex.remove(r);
                                                                 break;
                                                             }
                                                         } else {
+                                                            if player.rolodex.iter().filter(|g| *g.stars == 0).count() == 0 {
+                                                                refresh!(party "Cannot swap non-star guest for star guest because your rolodex has no available star guests.");
+                                                                continue 'star_swap_input;
+                                                            }
                                                             if *player.rolodex[r].stars == 0 {
                                                                 replacement = player.rolodex[r].clone();
                                                                 player.rolodex.remove(r);
