@@ -62,7 +62,7 @@ pub fn get_party_state(party: &Party, player: &Player) -> (bool, bool, bool, boo
     )
 }
 
-pub fn check_for_party_end_conditions(party: &mut Party, no_more_guests_can_come_in: bool) -> bool {
+pub fn check_for_party_end_conditions(party: &mut Party, house_is_full: bool, rolodex_is_empty: bool, available_full_house_abilities: bool, replenishes_available: bool) -> bool {
     use PartyState::*;
     if party.attendees.iter().filter(|g| g.trouble).count()
         - party.attendees.iter().filter(|g| g.chill).count()
@@ -75,7 +75,7 @@ pub fn check_for_party_end_conditions(party: &mut Party, no_more_guests_can_come
         party.state = Overcrowded;
         return true;
     }
-    if no_more_guests_can_come_in {
+    if (house_is_full || rolodex_is_empty) && !available_full_house_abilities && !replenishes_available{
         party.state = EndedSuccessfully;
         return true;
     }

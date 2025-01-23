@@ -58,86 +58,78 @@ fn main() {
                     available_full_house_abilities,
                     replenishes_available,
                 ) = get_party_state(&party, player);
-                'evaluate_party: {
-                    match party.state {
-                        IncomingGuest { mut amount, greet } if amount >= 1 => {
-                            if player.rolodex.is_empty() {
-                                party.state = IncomingGuest {
+                match party.state {
+                    IncomingGuest { mut amount, greet } if amount >= 1 => {
+                        if player.rolodex.is_empty() {
+                            party.state = IncomingGuest {
+                                amount: 0,
+                                greet: false,
+                            };
+                            continue 'ongoing_party;
+                        } else {
+                            if let Some(next_in_line) = party.peek_slot.take() {
+                                party.attendees.push(next_in_line);
+                            } else {
+                                party.attendees.push(player.rolodex.pop().unwrap())
+                            };
+                            let newest_guest = party.attendees.len() - 1;
+                            if greet {
+                                player
+                                    .add_pop_from_guest(*party.attendees[newest_guest].popularity);
+                                player.add_cash_from_guest(*party.attendees[newest_guest].cash);
+                                player
+                                    .add_pop_from_guest((party.attendees[newest_guest].bonus_pop)(
+                                        &party,
+                                    ));
+                                if party.attendees[newest_guest].guest_type == DANCER {
+                                    player.add_pop_from_guest(min(
+                                        16,
+                                        party
+                                            .attendees
+                                            .iter()
+                                            .filter(|a| a.guest_type == DANCER)
+                                            .count()
+                                            .pow(2) as i8,
+                                    ))
+                                };
+                                player.add_cash_from_guest((party.attendees[newest_guest]
+                                    .bonus_cash)(
+                                    &party
+                                ));
+                            }
+                            (party.attendees[newest_guest].entrance_effect)(
+                                &mut party.attendees[newest_guest],
+                            );
+                            amount += party.attendees[newest_guest].tagalongs;
+                            party.state = match amount {
+                                1 => IncomingGuest {
                                     amount: 0,
                                     greet: false,
-                                };
-                                continue 'ongoing_party;
-                            } else {
-                                if let Some(next_in_line) = party.peek_slot.take() {
-                                    party.attendees.push(next_in_line);
-                                } else {
-                                    party.attendees.push(player.rolodex.pop().unwrap())
-                                };
-                                let newest_guest = party.attendees.len() - 1;
-                                if greet {
-                                    player.add_pop_from_guest(
-                                        *party.attendees[newest_guest].popularity,
-                                    );
-                                    player.add_cash_from_guest(*party.attendees[newest_guest].cash);
-                                    player.add_pop_from_guest((party.attendees[newest_guest]
-                                        .bonus_pop)(
-                                        &party
-                                    ));
-                                    if party.attendees[newest_guest].guest_type == DANCER {
-                                        player.add_pop_from_guest(min(
-                                            16,
-                                            party
-                                                .attendees
-                                                .iter()
-                                                .filter(|a| a.guest_type == DANCER)
-                                                .count()
-                                                .pow(2)
-                                                as i8,
-                                        ))
-                                    };
-                                    player.add_cash_from_guest((party.attendees[newest_guest]
-                                        .bonus_cash)(
-                                        &party
-                                    ));
-                                }
-                                (party.attendees[newest_guest].entrance_effect)(
-                                    &mut party.attendees[newest_guest],
-                                );
-                                amount += party.attendees[newest_guest].tagalongs;
-                                party.state = match amount {
-                                    1 => IncomingGuest {
-                                        amount: 0,
-                                        greet: false,
-                                    },
-                                    2.. => IncomingGuest {
-                                        amount: amount - 1,
-                                        greet,
-                                    },
-                                    0 => unreachable!(),
-                                };
-                                if check_for_party_end_conditions(
-                                    &mut party,
-                                    house_is_full || rolodex_is_empty,
-                                ) {
-                                    break 'ongoing_party;
-                                }
-                                continue 'ongoing_party;
+                                },
+                                2.. => IncomingGuest {
+                                    amount: amount - 1,
+                                    greet,
+                                },
+                                0 => unreachable!(),
+                            };
+                            if check_for_party_end_conditions(&mut party, house_is_full, rolodex_is_empty, available_full_house_abilities, replenishes_available) {
+                                break 'ongoing_party;
                             }
+                            continue 'ongoing_party;
                         }
-                        _ => {}
                     }
-
-                    if (house_is_full || rolodex_is_empty)
-                        && (available_full_house_abilities || replenishes_available)
-                    {
-                        party.state = FullHouseUnusedAbility
-                    }
-                    if check_for_party_end_conditions(&mut party, house_is_full || rolodex_is_empty)
-                    {
-                        break 'ongoing_party;
-                    }
-                    todo!()
+                    _ => {}
                 }
+
+                if (house_is_full || rolodex_is_empty)
+                    && (available_full_house_abilities || replenishes_available)
+                {
+                    party.state = FullHouseUnusedAbility
+                }
+                if check_for_party_end_conditions(&mut party, house_is_full, rolodex_is_empty, available_full_house_abilities, replenishes_available) {
+                    break 'ongoing_party;
+                }
+                todo!();
 
                 'party_input: loop {
                     let mut input = String::new();
