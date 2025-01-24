@@ -4,9 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-card_deck = "*"
-clap = { version = "*", features = ["derive"] }
 rand = "*"
 clearscreen = "*"
+colored = "*"
 better_default = "*"
 nestify = "*"

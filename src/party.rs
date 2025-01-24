@@ -10,6 +10,7 @@ nest!(
         pub capacity: ClampedI8,
         pub peek_slot: Option<Guest>,
         pub ability_state: bool,
+        pub stars_to_win: usize,
         pub state:
             #[derive(PartialEq, Eq)]
             pub enum PartyState {
@@ -58,8 +59,11 @@ pub fn get_party_state(party: &Party, player: &Player) -> (bool, bool, bool, boo
 
 pub fn check_for_party_end_conditions(party: &mut Party, house_is_full: bool, rolodex_is_empty: bool, available_full_house_abilities: bool, replenishes_available: bool) -> bool {
     use PartyState::*;
-    if party.attendees.iter().filter(|g| g.trouble).count()
-        - party.attendees.iter().filter(|g| g.chill).count()
+    if party.state == EndedSuccessfully {
+        return true;
+    }
+    if party.attendees.iter().filter(|g| g.trouble).count() as i8
+        - party.attendees.iter().filter(|g| g.chill).count() as i8
         >= 3 
     {
         party.state = TooMuchTrouble;

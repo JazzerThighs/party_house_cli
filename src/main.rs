@@ -9,7 +9,8 @@ use clearscreen::clear;
 use guest::Guest;
 use rand::{seq::SliceRandom, thread_rng};
 use std::{
-    cmp::{min, Reverse}, io::stdin
+    cmp::{min, Reverse},
+    io::stdin,
 };
 use {
     display::*,
@@ -31,7 +32,7 @@ fn main() {
     'game: loop {
         clear().unwrap();
         for player in players.iter_mut() {
-            init_party(&mut party, player);
+            init_party(&mut party, player, star_guest_arrivals_for_win);
             let mut boxed_message: &str = "";
             macro_rules! refresh {
                 (party $message:expr) => {
@@ -41,7 +42,7 @@ fn main() {
                 (store message:expr) => {
                     boxed_message = $message;
                     store_display(&store, player, &boxed_message.to_string());
-                }
+                };
             }
             'ongoing_party: loop {
                 let (
@@ -112,6 +113,7 @@ fn main() {
                                 available_full_house_abilities,
                                 replenishes_available,
                             ) {
+                                refresh!(party boxed_message);
                                 break 'ongoing_party;
                             }
                             continue 'ongoing_party;
@@ -205,7 +207,9 @@ fn main() {
                             }
                         }
                         i if i.parse::<usize>().map_or(false, |n| {
-                            (1..=34).contains(&n) && n <= *party.capacity as usize
+                            (1..=34).contains(&n)
+                                && n <= *party.capacity as usize
+                                && n < party.attendees.len()
                         }) =>
                         {
                             let idx = i.parse::<usize>().unwrap() - 1;
@@ -285,7 +289,8 @@ fn main() {
                                         }
                                         match input.trim() {
                                             i if i.parse::<usize>().map_or(false, |n| {
-                                                (1..=34).contains(&n) && n <= *party.capacity as usize
+                                                (1..=34).contains(&n)
+                                                    && n <= *party.capacity as usize
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
@@ -293,9 +298,11 @@ fn main() {
                                                 player.add_pop_from_guest(
                                                     *party.attendees[target].popularity,
                                                 );
-                                                player
-                                                    .add_cash_from_guest(*party.attendees[target].cash);
-                                                player.add_pop_from_guest((party.attendees[target]
+                                                player.add_cash_from_guest(
+                                                    *party.attendees[target].cash,
+                                                );
+                                                player.add_pop_from_guest((party.attendees
+                                                    [target]
                                                     .bonus_pop)(
                                                     &party
                                                 ));
@@ -311,7 +318,8 @@ fn main() {
                                                             as i8,
                                                     ))
                                                 };
-                                                player.add_cash_from_guest((party.attendees[target]
+                                                player.add_cash_from_guest((party.attendees
+                                                    [target]
                                                     .bonus_cash)(
                                                     &party
                                                 ));
@@ -336,7 +344,7 @@ fn main() {
                                             }
                                         }
                                     }
-                                },
+                                }
                                 Style(mut target) => {
                                     refresh!(party "Select a guest to Photograph.");
                                     'style_input: loop {
@@ -347,7 +355,8 @@ fn main() {
                                         }
                                         match input.trim() {
                                             i if i.parse::<usize>().map_or(false, |n| {
-                                                (1..=34).contains(&n) && n <= *party.capacity as usize
+                                                (1..=34).contains(&n)
+                                                    && n <= *party.capacity as usize
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
@@ -374,7 +383,7 @@ fn main() {
                                             }
                                         }
                                     }
-                                },
+                                }
                                 Boot(mut target) => {
                                     refresh!(party "Select a guest to Kick from the party.");
                                     'boot_input: loop {
@@ -385,7 +394,8 @@ fn main() {
                                         }
                                         match input.trim() {
                                             i if i.parse::<usize>().map_or(false, |n| {
-                                                (1..=34).contains(&n) && n <= *party.capacity as usize
+                                                (1..=34).contains(&n)
+                                                    && n <= *party.capacity as usize
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
@@ -413,7 +423,7 @@ fn main() {
                                             }
                                         }
                                     }
-                                },
+                                }
                                 StarSwap(mut target) => match (
                                     party.attendees.iter().filter(|a| *a.stars > 0).count() > 0,
                                     player.rolodex.iter().filter(|a| *a.stars > 0).count() > 0,
@@ -438,22 +448,36 @@ fn main() {
                                                     let goes_away: Guest;
                                                     for r in 0..player.rolodex.len() {
                                                         if *party.attendees[target].stars == 0 {
-                                                            if player.rolodex.iter().filter(|g| *g.stars != 0).count() == 0 {
+                                                            if player
+                                                                .rolodex
+                                                                .iter()
+                                                                .filter(|g| *g.stars != 0)
+                                                                .count()
+                                                                == 0
+                                                            {
                                                                 refresh!(party "Cannot swap star guest for non-star guest because your rolodex has no available non-star guests.");
                                                                 continue 'star_swap_input;
                                                             }
                                                             if *player.rolodex[r].stars != 0 {
-                                                                replacement = player.rolodex[r].clone();
+                                                                replacement =
+                                                                    player.rolodex[r].clone();
                                                                 player.rolodex.remove(r);
                                                                 break;
                                                             }
                                                         } else {
-                                                            if player.rolodex.iter().filter(|g| *g.stars == 0).count() == 0 {
+                                                            if player
+                                                                .rolodex
+                                                                .iter()
+                                                                .filter(|g| *g.stars == 0)
+                                                                .count()
+                                                                == 0
+                                                            {
                                                                 refresh!(party "Cannot swap non-star guest for star guest because your rolodex has no available star guests.");
                                                                 continue 'star_swap_input;
                                                             }
                                                             if *player.rolodex[r].stars == 0 {
-                                                                replacement = player.rolodex[r].clone();
+                                                                replacement =
+                                                                    player.rolodex[r].clone();
                                                                 player.rolodex.remove(r);
                                                                 break;
                                                             }
@@ -484,7 +508,7 @@ fn main() {
                                                 }
                                             }
                                         }
-                                    },
+                                    }
                                     (false, false) => {
                                         refresh!(party "There are neither any star guests in the rolodex nor the party.");
                                         party.ability_state = false;
@@ -534,7 +558,8 @@ fn main() {
                                             }
                                             i if i.parse::<usize>().map_or(false, |n| {
                                                 n == *party.capacity as usize
-                                            }) => {
+                                            }) =>
+                                            {
                                                 refresh!(party "If you want to pair-kick the two guests at the back, select the guest with the lower of the 2 positional numbers.");
                                             }
                                             _ => {
@@ -605,12 +630,15 @@ fn main() {
                                                 {
                                                     party.attendees[idx].ability_stock -= 1;
                                                     let target = i.parse::<usize>().unwrap() - 1;
-                                                    party.attendees.push(player.rolodex[target].clone());
+                                                    party
+                                                        .attendees
+                                                        .push(player.rolodex[target].clone());
                                                     player.rolodex.remove(target);
                                                     let mut rng = thread_rng();
                                                     player.rolodex.shuffle(&mut rng);
                                                     party.state = IncomingGuest {
-                                                        amount: party.attendees[party.attendees.len() - 1]
+                                                        amount: party.attendees
+                                                            [party.attendees.len() - 1]
                                                             .tagalongs,
                                                         greet: false,
                                                     };
@@ -634,8 +662,8 @@ fn main() {
                                             }
                                         }
                                     }
-                                }
-                                NoAbility => unreachable!()
+                                },
+                                NoAbility => unreachable!(),
                             }
                         }
                         _ => {
@@ -660,8 +688,12 @@ fn main() {
                         >= star_guest_arrivals_for_win
                     {
                         victories[player.id] = true;
-                        todo!() // Show that the player won
+                        boxed_message = "You threw the Ultimate Party! Win!"
+                    } else {
+                        boxed_message = "Party Ended Successfully!"
                     }
+                    refresh!(party boxed_message);
+                    pause_for_enter("");
                 }
                 _ => unreachable!(),
             }
@@ -671,7 +703,7 @@ fn main() {
             }
 
             'store: {
-                if !&victories[0..=player.id + 1].iter().any(|v| *v) {
+                if victories[0..=player.id].iter().any(|v| *v) {
                     break 'store;
                 }
                 let mut boxed_message: &str = "";
@@ -715,6 +747,7 @@ fn main() {
                             if cost_of_expansion == 0 {
                                 boxed_message = "Player's capacity is maxed out!";
                             } else if *player.cash >= cost_of_expansion {
+                                player.cash -= cost_of_expansion;
                                 player.capacity += 1;
                                 boxed_message = "";
                             } else {

@@ -216,7 +216,7 @@ pub fn guest_lists() -> (
         randos,
         HIPPY,
         sort_value: 43,
-        emoji: '✌',
+        emoji: '🌼',
         cost: 4,
         popularity: ClampedI8::pop_cash(2),
         chill_base: true,

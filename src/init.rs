@@ -232,7 +232,7 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
     store
 }
 
-pub fn init_party(party: &mut Party, player: &mut Player) {
+pub fn init_party(party: &mut Party, player: &mut Player, stars_to_win: usize) {
     if player.banned.guest.is_some() && player.banned.already_served_time {
         player.rolodex.push(player.banned.guest.take().unwrap());
     }
@@ -245,6 +245,7 @@ pub fn init_party(party: &mut Party, player: &mut Player) {
     }
     *party = Party {
         capacity: player.capacity.clone(),
+        stars_to_win,
         ..Default::default()
     };
     let mut rng = thread_rng();

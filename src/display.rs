@@ -1,10 +1,11 @@
-use std::{io::*, f32::INFINITY};
-use clearscreen::clear;
 use crate::{
     guest::{AbilityType::*, GuestType::*, *},
     party::*,
     player::*,
 };
+use clearscreen::clear;
+use colored::*;
+use std::{cmp::max, f32::INFINITY, io::*};
 
 pub fn pause_for_enter(prompt: &str) {
     print!("{}", prompt);
@@ -89,70 +90,83 @@ pub fn display_guest(guest: &Guest) -> String {
         "{:>10} {:>2} {:>2} {:>2} {:>2} {:>2}",
         guest_type_display(&guest.guest_type),
         guest.emoji,
+        match *guest.popularity {
+            x if x > 0 => x.to_string().yellow().on_black(),
+            x if x < 0 => x.to_string().yellow().on_red(),
+            _ => "".to_string().white().on_black(),
+        },
+        match *guest.cash {
+            x if x > 0 => x.to_string().green().on_black(),
+            x if x < 0 => x.to_string().green().on_red(),
+            _ => "".to_string().white().on_black(),
+        },
         match (guest.trouble, guest.chill) {
             (true, _) => "❌",
             (false, true) => "🕊️",
-            (_, _) => ""
-        },
-        match *guest.popularity {
-            x if x < 0 || x > 0 => {
-                x.to_string()
-            }
-            _ => {
-                "".to_string()
-            }
-        },
-        match *guest.cash {
-            x if x < 0 || x > 0 => {
-                x.to_string()
-            }
-            _ => {
-                "".to_string()
-            }
+            (_, _) => "",
         },
         match guest.ability_stock {
             0 => "",
-            1.. => ability_type_display(&guest.ability_type)
+            1.. => ability_type_display(&guest.ability_type),
         }
     )
 }
 
-pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxed_message: &String) {
+pub fn party_display(
+    party: &Party,
+    player: &Player,
+    victories: &Vec<bool>,
+    boxed_message: &String,
+) {
     clear().unwrap();
-    println!("Player {}, throw a party!", player.id);
-    if victories.iter().any(|v| *v) {
-        for v in victories.iter() {
-            if *v {
-                println!("Player {} won today!", player.id + 1)
-            };
-        }
-        println!("Last Chance!\n");
-    }
-    println!("{boxed_message}");
+    println!("Player {}, throw a party!", player.id + 1);
+    println!(
+        "| POP: {:>2}/65 | $: {:>2}/30 |",
+        (*player.popularity).to_string().yellow(),
+        (*player.cash).to_string().green()
+    );
+    println!(
+        "Stars: {}/{}",
+        max(
+            0,
+            party.attendees.iter().filter(|a| *a.stars == 1).count() as i8
+                - party.attendees.iter().filter(|a| *a.stars == -1).count() as i8
+        ),
+        party.stars_to_win
+    );
+    // if victories.iter().any(|v| *v) {
+    //     for v in victories.iter() {
+    //         if *v {
+    //             println!("Player {} won today!", player.id + 1)
+    //         };
+    //     }
+    //     println!("Last Chance!\n");
+    // }
+    println!("[ {} ]", boxed_message.blue().on_black());
     print!(
-        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n\n", 
+        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n\n",
         "\"h\" => Open the door",
         "\"r\" => View your rolodex",
         "\"e\" => End the party",
         match party.peek_slot {
             Some(_) => "\"b\" => Boot the guest at the front door",
-            None => ""
+            None => "",
         },
         match party.ability_state {
             true => "\"n\" => Decide not to use the currently selected ability",
-            false => ""
+            false => "",
         },
         "Integers 1..=",
         *party.capacity,
         "=> Use that attendee's ability"
     );
-    for i in 0..*party.capacity as usize { 
+    for i in 0..*party.capacity as usize {
         println!(
             "{:>2}) {}",
             i + 1,
             match i < party.attendees.len() {
                 true => display_guest(&party.attendees[i]),
-                false => "".to_string()
+                false => "".to_string(),
             }
         );
     }
@@ -167,17 +181,22 @@ pub fn party_display(party: &Party, player: &Player, victories: &Vec<bool>, boxe
 
 pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, boxed_message: &String) {
     clear().unwrap();
-    println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:\n", player.id + 1);
+    println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:", player.id + 1);
+    println!(
+        "| POP: {:>2}/65 | $: {:>2}/30 |\n",
+        (*player.popularity).to_string().yellow(),
+        (*player.cash).to_string().green()
+    );
     println!(
         "Controls:\n \"c\" to increase the capacity of your house, \"r\" to see your rolodex, \"e\" to finish shopping, or an integer from 1 to 13 to add an available contact to your rolodex."
     );
     print!(
-        "Controls:\n {}\n {}\n {}\n {}{} {}\n\n", 
+        "Controls:\n {}\n {}\n {}\n {}{} {}\n\n",
         "\"r\" => View your rolodex",
         match *player.capacity {
             5..=33 => "\"c\" => Increase the capacity of your house",
             34.. => "",
-            ..=4 => unreachable!()
+            ..=4 => unreachable!(),
         },
         "\"e\" => Finish Shopping and move on to the next day of partying",
         "Integers 1..=",
@@ -185,15 +204,15 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, boxed_message: 
         "=> Add one copy of that contact to your rolodex"
     );
     print!("{boxed_message}\n\n");
-    for i in 0..store.len() { 
+    for i in 0..store.len() {
         println!(
-            "{:>2}) {} × {}",
+            "{:>2}) {} {}",
             i + 1,
             display_guest(&store[i].0),
             match store[i].1 {
                 0.0 => "Sold Out!".to_string(),
-                INFINITY => format!("∞ => Cost: {}", store[i].0.cost),
-                _ => format!("{} => Cost: {}", store[i].1, store[i].0.cost)
+                INFINITY => format!("× ∞  => Cost: {}", store[i].0.cost),
+                _ => format!("× {:>2} => Cost: {}", store[i].1, store[i].0.cost),
             },
         );
     }
@@ -201,6 +220,6 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, boxed_message: 
         5..=15 => println!("Upgrade Capacity => Cost: {}", *player.capacity - 3),
         16..=33 => println!("Upgrade Capacity => Cost: 12"),
         34.. => println!("House Capacity Maxed Out! (34 Spots Max)"),
-        ..=4 => unreachable!()
+        ..=4 => unreachable!(),
     }
 }

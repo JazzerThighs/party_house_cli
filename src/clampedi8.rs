@@ -45,7 +45,7 @@ impl Deref for ClampedI8 {
 impl From<(i8, i8, i8)> for ClampedI8 {
     fn from(tuple: (i8, i8, i8)) -> Self {
         ClampedI8 {
-            value: tuple.1,
+            value: tuple.0,
             min: tuple.1,
             max: tuple.2
         }
