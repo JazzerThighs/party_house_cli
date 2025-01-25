@@ -226,7 +226,11 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
         }
     }
     clear().unwrap();
-    
+    for g in 0..store.len() {
+        store[g].0.trouble = store[g].0.trouble_base;
+        store[g].0.chill = store[g].0.chill_base;
+        store[g].0.ability_stock = store[g].0.ability_base;
+    }
     store.sort_by(|a, b| a.0.sort_value.cmp(&b.0.sort_value));
     
     store

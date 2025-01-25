@@ -87,8 +87,13 @@ const fn ability_type_display(ability_type: &AbilityType) -> &str {
 
 pub fn display_guest(guest: &Guest) -> String {
     format!(
-        "{:>10} {:>2} {:>2} {:>2} {:>2} {:>2}",
+        "{:>10} {} {:>2} {:>2} {:>2} {} {:>2}",
         guest_type_display(&guest.guest_type),
+        match *guest.stars {
+            -1 => "*".white().on_red(),
+            1 => "*".white().on_black(),
+            _ => " ".white().on_black()
+        },
         guest.emoji,
         match *guest.popularity {
             x if x > 0 => x.to_string().yellow().on_black(),
@@ -101,9 +106,9 @@ pub fn display_guest(guest: &Guest) -> String {
             _ => "".to_string().white().on_black(),
         },
         match (guest.trouble, guest.chill) {
-            (true, _) => "❌",
-            (false, true) => "🕊️",
-            (_, _) => "",
+            (true, _) => "X".red().on_black(),
+            (false, true) => "X".black().on_white(),
+            (_, _) => " ".white().on_black(),
         },
         match guest.ability_stock {
             0 => "",
@@ -126,7 +131,7 @@ pub fn party_display(
         (*player.cash).to_string().green()
     );
     println!(
-        "Stars: {}/{}",
+        "***Stars: {}/{}***",
         max(
             0,
             party.attendees.iter().filter(|a| *a.stars == 1).count() as i8
@@ -144,7 +149,7 @@ pub fn party_display(
     // }
     println!("[ {} ]", boxed_message.blue().on_black());
     print!(
-        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n\n",
+        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n",
         "\"h\" => Open the door",
         "\"r\" => View your rolodex",
         "\"e\" => End the party",
@@ -160,6 +165,10 @@ pub fn party_display(
         *party.capacity,
         "=> Use that attendee's ability"
     );
+    match &party.peek_slot {
+        Some(p) => println!("{}", display_guest(p)),
+        None => println!()
+    }
     for i in 0..*party.capacity as usize {
         println!(
             "{:>2}) {}",
@@ -183,12 +192,11 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, boxed_message: 
     clear().unwrap();
     println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:", player.id + 1);
     println!(
-        "| POP: {:>2}/65 | $: {:>2}/30 |\n",
+        "| POP: {:>2}/65 | $: {:>2}/30 | Capacity: {:>2}/34 | Rolodex: {:>2} |\n",
         (*player.popularity).to_string().yellow(),
-        (*player.cash).to_string().green()
-    );
-    println!(
-        "Controls:\n \"c\" to increase the capacity of your house, \"r\" to see your rolodex, \"e\" to finish shopping, or an integer from 1 to 13 to add an available contact to your rolodex."
+        (*player.cash).to_string().green(),
+        (*player.capacity).to_string().blue(),
+        player.rolodex.len()
     );
     print!(
         "Controls:\n {}\n {}\n {}\n {}{} {}\n\n",

@@ -209,7 +209,7 @@ fn main() {
                         i if i.parse::<usize>().map_or(false, |n| {
                             (1..=34).contains(&n)
                                 && n <= *party.capacity as usize
-                                && n < party.attendees.len()
+                                && n <= party.attendees.len()
                         }) =>
                         {
                             let idx = i.parse::<usize>().unwrap() - 1;
