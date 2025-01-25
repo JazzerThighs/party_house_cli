@@ -37,11 +37,11 @@ fn main() {
             macro_rules! refresh {
                 (party $message:expr) => {
                     boxed_message = $message;
-                    party_display(&party, player, &victories, &boxed_message.to_string());
+                    party_display(&party, player, &victories, day_count, &boxed_message.to_string());
                 };
-                (store message:expr) => {
+                (store $message:expr) => {
                     boxed_message = $message;
-                    store_display(&store, player, &boxed_message.to_string());
+                    store_display(&store, player, &victories, day_count, &boxed_message.to_string());
                 };
             }
             'ongoing_party: loop {
@@ -702,13 +702,15 @@ fn main() {
                 player.rolodex.push(peek);
             }
 
+            day_count += 1;
+
             'store: {
                 if victories[0..=player.id].iter().any(|v| *v) {
                     break 'store;
                 }
                 let mut boxed_message: &str = "";
                 'store_input: loop {
-                    store_display(&store, player, &boxed_message.to_string());
+                    refresh!(store boxed_message);
                     let mut input = String::new();
                     if let Err(e) = stdin().read_line(&mut input) {
                         eprintln!("Error reading input: {}", e);
@@ -794,7 +796,6 @@ fn main() {
                 }
             }
         }
-        day_count += 1;
     }
 
     clear().unwrap();

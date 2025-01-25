@@ -121,6 +121,7 @@ pub fn party_display(
     party: &Party,
     player: &Player,
     victories: &Vec<bool>,
+    day_count: usize,
     boxed_message: &String,
 ) {
     clear().unwrap();
@@ -131,13 +132,18 @@ pub fn party_display(
         (*player.cash).to_string().green()
     );
     println!(
-        "***Stars: {}/{}***",
+        "***Stars: {}/{}*** | {}",
         max(
             0,
             party.attendees.iter().filter(|a| *a.stars == 1).count() as i8
                 - party.attendees.iter().filter(|a| *a.stars == -1).count() as i8
         ),
-        party.stars_to_win
+        party.stars_to_win,
+        match victories.len() {
+            1 => format!("Day {}/25", day_count),
+            2.. => format!("Day {}", day_count),
+            0 => unreachable!()
+        }
     );
     // if victories.iter().any(|v| *v) {
     //     for v in victories.iter() {
@@ -188,9 +194,16 @@ pub fn party_display(
     }
 }
 
-pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, boxed_message: &String) {
+pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec<bool>, day_count: usize, boxed_message: &String) {
     clear().unwrap();
     println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:", player.id + 1);
+    println!("{}", 
+        match victories.len() {
+            1 => format!("Going into Day {}/25", day_count),
+            2.. => format!("Going into Day {}", day_count),
+            0 => unreachable!()
+        }
+    );
     println!(
         "| POP: {:>2}/65 | $: {:>2}/30 | Capacity: {:>2}/34 | Rolodex: {:>2} |\n",
         (*player.popularity).to_string().yellow(),
