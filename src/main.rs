@@ -611,6 +611,7 @@ fn main() {
                                                     Reverse(*guest.cash),
                                                 )
                                             });
+                                            println!("\nRolodex:\n");
                                             for contact_num in 0..player.rolodex.len() {
                                                 println!(
                                                     "{:>2}) {}",
