@@ -155,6 +155,9 @@ fn main() {
                             let mut rolodex_view: Vec<&Guest> = player.rolodex.iter().collect();
                             let mut attendees_view: Vec<&Guest> = party.attendees.iter().collect();
                             let mut booted_view: Vec<&Guest> = player.booted.iter().collect();
+                            if let Some(peek) = &party.peek_slot {
+                                rolodex_view.push(&peek)
+                            };
                             if let Some(banned) = &player.banned.guest {
                                 booted_view.push(&banned)
                             };
@@ -179,7 +182,25 @@ fn main() {
                                     Reverse(*guest.cash),
                                 )
                             });
-                            todo!();
+                            clear().unwrap();
+                            println!("Player {}", player.id + 1);
+                            let mut i = 1;
+                            println!("The following contacts can still show up to the party:");
+                            for r in rolodex_view {
+                                println!("{i:>2}) {}", display_guest(r));
+                                i += 1;
+                            }
+                            println!("The following contacts have already showed up to the party:");
+                            for a in attendees_view {
+                                println!("{i:>2}) {}", display_guest(a));
+                                i += 1;
+                            }
+                            println!("The following contacts cannot show up to the party today:");
+                            for b in booted_view {
+                                println!("{i:>2}) {}", display_guest(b));
+                                i += 1;
+                            }
+                            pause_for_enter("Press \"Enter\" to go back to the party...");
                             break 'party_input;
                         }
                         "e" => {
@@ -738,7 +759,21 @@ fn main() {
                                     Reverse(*guest.cash),
                                 )
                             });
-                            todo!()
+                            clear().unwrap();
+                            println!("Player {}", player.id + 1);
+                            let mut i = 1;
+                            println!("The following contacts can show up to the party tomorrow:");
+                            for r in rolodex_view {
+                                println!("{i:>2}) {}", display_guest(r));
+                                i += 1;
+                            }
+                            println!("The following contacts cannot show up to the party tomorrow:");
+                            for b in booted_view {
+                                println!("{i:>2}) {}", display_guest(b));
+                                i += 1;
+                            }
+                            pause_for_enter("Press \"Enter\" to go back to the party...");
+                            continue 'store_input;
                         }
                         "c" => {
                             let cost_of_expansion = match *player.capacity {
