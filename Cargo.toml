@@ -3,6 +3,12 @@ name = "party_house_cli"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+opt-level = "z"  # Optimize for size
+lto = true       # Enable Link Time Optimization
+codegen-units = 1 # Reduce parallel code generation for smaller binaries
+strip = true     # Strip debug symbols from the binary
+
 [dependencies]
 rand = "*"
 clearscreen = "*"

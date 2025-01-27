@@ -87,14 +87,13 @@ const fn ability_type_display(ability_type: &AbilityType) -> &str {
 
 pub fn display_guest(guest: &Guest) -> String {
     format!(
-        "{:>10} {} {:>2} {:>2} {:>2} {} {:>2}",
+        "{:>10} {} {:>2} {:>2} {} {:>2} {:>2}",
         guest_type_display(&guest.guest_type),
         match *guest.stars {
-            -1 => "*".white().on_red(),
-            1 => "*".white().on_black(),
+            -1 => "*".yellow().on_red(),
+            1 => "*".yellow().on_black(),
             _ => " ".white().on_black()
         },
-        guest.emoji,
         match *guest.popularity {
             x if x > 0 => x.to_string().yellow().on_black(),
             x if x < 0 => x.to_string().yellow().on_red(),
@@ -109,6 +108,10 @@ pub fn display_guest(guest: &Guest) -> String {
             (true, _) => "X".red().on_black(),
             (false, true) => "X".black().on_white(),
             (_, _) => " ".white().on_black(),
+        },
+        match guest.tagalongs {
+            0 => "".white().on_black(),
+            1.. => format!("+{}", guest.tagalongs).bright_blue().on_black()
         },
         match guest.ability_stock {
             0 => "",
@@ -132,18 +135,21 @@ pub fn party_display(
         (*player.cash).to_string().green()
     );
     println!(
-        "***Stars: {}/{}*** | {}",
+        "{}Stars: {}/{}{} | {} | Capacity: {}/35",
+        "*".yellow(),
         max(
             0,
             party.attendees.iter().filter(|a| *a.stars == 1).count() as i8
                 - party.attendees.iter().filter(|a| *a.stars == -1).count() as i8
         ),
         party.stars_to_win,
+        "*".yellow(),
         match victories.len() {
             1 => format!("Day {}/25", day_count),
             2.. => format!("Day {}", day_count),
             0 => unreachable!()
-        }
+        },
+        *party.capacity
     );
     // if victories.iter().any(|v| *v) {
     //     for v in victories.iter() {
@@ -188,13 +194,15 @@ pub fn party_display(
     // show that the party overflowed if it did
     if party.attendees.len() > *party.capacity as usize {
         println!(
-            "Overflow! {}",
+            "{}) {} {}",
+            party.attendees.len(),
             display_guest(&party.attendees[party.attendees.len() - 1]),
+            "=> Overflow!".black().on_red()
         );
     }
 }
 
-pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec<bool>, day_count: usize, boxed_message: &String) {
+pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec<bool>, day_count: usize, stars_to_win: &usize, boxed_message: &String) {
     clear().unwrap();
     println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:", player.id + 1);
     println!("{}", 
@@ -204,6 +212,7 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
             0 => unreachable!()
         }
     );
+    println!("Win Condition: {} Stars in One Party", stars_to_win.to_string().yellow().on_black());
     println!(
         "| POP: {:>2}/65 | $: {:>2}/30 | Capacity: {:>2}/34 | Rolodex: {:>2} |\n",
         (*player.popularity).to_string().yellow(),
@@ -224,22 +233,22 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
         store.len(),
         "=> Add one copy of that contact to your rolodex"
     );
-    print!("{boxed_message}\n\n");
+    print!("[ {} ]\n\n", boxed_message.blue().on_black());
     for i in 0..store.len() {
         println!(
-            "{:>2}) {} {}",
+            "{:>2}) {}  {}",
             i + 1,
             display_guest(&store[i].0),
             match store[i].1 {
                 0.0 => "Sold Out!".to_string(),
-                INFINITY => format!("× ∞  => Cost: {}", store[i].0.cost),
-                _ => format!("× {:>2} => Cost: {}", store[i].1, store[i].0.cost),
+                INFINITY => format!("×  ∞ => Cost: {}", store[i].0.cost.to_string().yellow().on_black()),
+                _ => format!("× {:>2} => Cost: {}", store[i].1, store[i].0.cost.to_string().yellow().on_black()),
             },
         );
     }
     match *player.capacity {
-        5..=15 => println!("Upgrade Capacity => Cost: {}", *player.capacity - 3),
-        16..=33 => println!("Upgrade Capacity => Cost: 12"),
+        5..=15 => println!("Upgrade Capacity => Cost: {}", (*player.capacity - 3).to_string().green().on_black()),
+        16..=33 => println!("Upgrade Capacity => Cost: {}", "12".green().on_black()),
         34.. => println!("House Capacity Maxed Out! (34 Spots Max)"),
         ..=4 => unreachable!(),
     }

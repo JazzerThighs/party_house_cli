@@ -1,3 +1,5 @@
+use std::io::stdin;
+
 use crate::{clampedi8::*, guest::*, player::*};
 use better_default::Default;
 use nestify::nest;
@@ -78,4 +80,28 @@ pub fn check_for_party_end_conditions(party: &mut Party, house_is_full: bool, ro
         return true;
     }
     false
+}
+
+pub fn ban_guest(player: &mut Player, party: &mut Party) {
+    if let Some(g) = &player.banned.guest.take() {
+        player.rolodex.push(g.clone());
+    }
+    loop {
+    let mut input = String::new();
+        if let Err(e) = stdin().read_line(&mut input) {
+            eprintln!("Error reading input: {}", e);
+            continue;
+        }
+        match input.trim() {
+            i if i.parse::<usize>().map_or(false, |n| (1..=34).contains(&n) && n <= party.attendees.len()) => {
+                let idx = i.parse::<usize>().unwrap() - 1;
+                let banned = party.attendees[idx].clone();
+                party.attendees.remove(idx);
+                player.banned.guest = Some(banned);
+                player.banned.already_served_time = false;
+                break;
+            },
+            _ => println!("Invalid input.")
+        }
+    }
 }

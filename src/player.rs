@@ -28,7 +28,7 @@ impl Player {
         self.popularity += amount;
     }
     pub fn add_cash_from_guest(&mut self, amount: i8) {
-        let mut c: i8 = *(self.cash.clone() + amount);
+        let mut c: i8 = *self.cash + amount;
         while c < 0 {
             self.popularity -= 7;
             c += 1;
@@ -56,12 +56,5 @@ impl Player {
         // Cash Bonuses
         self.add_cash_from_guest(party.attendees.iter().filter(|a| (a.bonus_cash)(&party) >= 0).map(|a| (a.bonus_cash)(&party)).sum(),);
         self.add_cash_from_guest(party.attendees.iter().filter(|a| (a.bonus_cash)(&party) < 0).map(|a| (a.bonus_cash)(&party)).sum(),);
-    }
-    pub fn ban_guest(&mut self, guest: Guest) {
-        if let Some(g) = &self.banned.guest {
-            self.rolodex.push(g.clone());
-        }
-        self.banned.guest = Some(guest);
-        self.banned.already_served_time = false;
     }
 }

@@ -41,10 +41,12 @@ fn main() {
                 };
                 (store $message:expr) => {
                     boxed_message = $message;
-                    store_display(&store, player, &victories, day_count, &boxed_message.to_string());
+                    store_display(&store, player, &victories, day_count, &star_guest_arrivals_for_win, &boxed_message.to_string());
                 };
             }
             'ongoing_party: loop {
+                let mut rng = thread_rng();
+                player.rolodex.shuffle(&mut rng);
                 let (
                     house_is_full,
                     rolodex_is_empty,
@@ -125,7 +127,7 @@ fn main() {
                 if (house_is_full || rolodex_is_empty)
                     && (available_full_house_abilities || replenishes_available)
                 {
-                    party.state = FullHouseUnusedAbility
+                    boxed_message = "Party is full, but you still can use some abilities!";
                 }
                 if check_for_party_end_conditions(
                     &mut party,
@@ -246,6 +248,7 @@ fn main() {
                             match party.attendees[idx].ability_type {
                                 Evac => {
                                     party.attendees[idx].ability_stock -= 1;
+                                    party.ability_state = false;
                                     player.rolodex.extend(party.attendees.drain(0..));
                                     if let Some(peek) = party.peek_slot.take() {
                                         player.rolodex.push(peek);
@@ -260,6 +263,7 @@ fn main() {
                                 }
                                 Cheer => {
                                     party.attendees[idx].ability_stock -= 1;
+                                    party.ability_state = false;
                                     for p in party
                                         .attendees
                                         .iter_mut()
@@ -275,6 +279,7 @@ fn main() {
                                 }
                                 Quench => {
                                     party.attendees[idx].ability_stock -= 1;
+                                    party.ability_state = false;
                                     for p in party.attendees.iter_mut() {
                                         p.trouble = false;
                                     }
@@ -295,8 +300,8 @@ fn main() {
                                     }
                                     (None, false) => {
                                         party.attendees[idx].ability_stock -= 1;
-                                        party.peek_slot = Some(player.rolodex.pop().unwrap());
                                         party.ability_state = false;
+                                        party.peek_slot = Some(player.rolodex.pop().unwrap());
                                         break 'party_input;
                                     }
                                 },
@@ -315,6 +320,7 @@ fn main() {
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
+                                                party.ability_state = false;
                                                 target = i.parse::<usize>().unwrap() - 1;
                                                 player.add_pop_from_guest(
                                                     *party.attendees[target].popularity,
@@ -348,15 +354,16 @@ fn main() {
                                                     amount: 0,
                                                     greet: false,
                                                 };
-                                                party.ability_state = false;
+                                                boxed_message = "";
                                                 break 'party_input;
                                             }
                                             "n" => {
+                                                party.ability_state = false;
                                                 party.state = IncomingGuest {
                                                     amount: 0,
                                                     greet: false,
                                                 };
-                                                party.ability_state = false;
+                                                boxed_message = "";
                                                 break 'party_input;
                                             }
                                             _ => {
@@ -381,21 +388,23 @@ fn main() {
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
+                                                party.ability_state = false;
                                                 target = i.parse::<usize>().unwrap() - 1;
                                                 party.attendees[target].popularity += 1;
                                                 party.state = IncomingGuest {
                                                     amount: 0,
                                                     greet: false,
                                                 };
-                                                party.ability_state = false;
+                                                boxed_message = "";
                                                 break 'party_input;
                                             }
                                             "n" => {
+                                                party.ability_state = false;
                                                 party.state = IncomingGuest {
                                                     amount: 0,
                                                     greet: false,
                                                 };
-                                                party.ability_state = false;
+                                                boxed_message = "";
                                                 break 'party_input;
                                             }
                                             _ => {
@@ -420,6 +429,7 @@ fn main() {
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
+                                                party.ability_state = false;
                                                 target = i.parse::<usize>().unwrap() - 1;
                                                 player.booted.push(party.attendees[target].clone());
                                                 party.attendees.remove(target);
@@ -427,15 +437,16 @@ fn main() {
                                                     amount: 0,
                                                     greet: false,
                                                 };
-                                                party.ability_state = false;
+                                                boxed_message = "";
                                                 break 'party_input;
                                             }
                                             "n" => {
+                                                party.ability_state = false;
                                                 party.state = IncomingGuest {
                                                     amount: 0,
                                                     greet: false,
                                                 };
-                                                party.ability_state = false;
+                                                boxed_message = "";
                                                 break 'party_input;
                                             }
                                             _ => {
@@ -513,6 +524,7 @@ fn main() {
                                                         greet: false,
                                                     };
                                                     party.ability_state = false;
+                                                    boxed_message = "";
                                                     break 'party_input;
                                                 }
                                                 "n" => {
@@ -521,6 +533,7 @@ fn main() {
                                                         greet: false,
                                                     };
                                                     party.ability_state = false;
+                                                    boxed_message = "";
                                                     break 'party_input;
                                                 }
                                                 _ => {
@@ -567,6 +580,7 @@ fn main() {
                                                     greet: false,
                                                 };
                                                 party.ability_state = false;
+                                                boxed_message = "";
                                                 break 'party_input;
                                             }
                                             "n" => {
@@ -575,6 +589,7 @@ fn main() {
                                                     greet: false,
                                                 };
                                                 party.ability_state = false;
+                                                boxed_message = "";
                                                 break 'party_input;
                                             }
                                             i if i.parse::<usize>().map_or(false, |n| {
@@ -665,6 +680,7 @@ fn main() {
                                                         greet: false,
                                                     };
                                                     party.ability_state = false;
+                                                    boxed_message = "";
                                                     break 'party_input;
                                                 }
                                                 "n" => {
@@ -675,6 +691,7 @@ fn main() {
                                                         greet: false,
                                                     };
                                                     party.ability_state = false;
+                                                    boxed_message = "";
                                                     break 'party_input;
                                                 }
                                                 _ => {
@@ -698,10 +715,12 @@ fn main() {
 
             match party.state {
                 TooMuchTrouble => {
-                    todo!(); // Cops Came
+                    refresh!(party "Oh no! The cops have shown up! Select a guest to take the blame!");
+                    ban_guest(player, &mut party);
                 }
                 Overcrowded => {
-                    todo!(); // Fire Marshal Came
+                    refresh!(party "Oh no! The fire marshal has shown up! Select a guest to take the blame!");
+                    ban_guest(player, &mut party);
                 }
                 EndedSuccessfully => {
                     player.end_of_party_score_guests(&party);
@@ -772,7 +791,7 @@ fn main() {
                                 println!("{i:>2}) {}", display_guest(b));
                                 i += 1;
                             }
-                            pause_for_enter("Press \"Enter\" to go back to the party...");
+                            pause_for_enter("Press \"Enter\" to go back to the store...");
                             continue 'store_input;
                         }
                         "c" => {
@@ -850,6 +869,32 @@ fn main() {
             }
             println!("Everyone else loses! All of their vibes were way off!")
         }
+    }
+
+    match victories.len() {
+        1 => match victories[0] {
+            true => println!("You threw the Ultimate Party! Win!"),
+            false => println!("You lose!"),
+        },
+        2.. => {
+            if victories.iter().filter(|v| **v).count() > 1 {
+                for i in 0..victories.len() {
+                    match victories[i] {
+                        true => println!("Player {} threw the Ultimate Party! Win!", i + 1),
+                        false => println!("Player {} loses!", i + 1),
+                    }
+                }
+            } else {
+                for i in 0..victories.len() {
+                    match victories[i] {
+                        true => println!("Player {} is the Party Master! Win!", i + 1),
+                        false => {}
+                    }
+                    println!("Everyone else loses! All of their vibes were way off!")
+                }
+            }
+        },
+        0 => unreachable!()
     }
     println!();
 }
