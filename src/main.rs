@@ -752,8 +752,6 @@ fn main() {
                 player.rolodex.push(peek);
             }
 
-            day_count += 1;
-
             'store: {
                 if victories[0..=player.id].iter().any(|v| *v) {
                     break 'store;
@@ -849,25 +847,11 @@ fn main() {
                 }
             }
         }
+
+        day_count += 1;
     }
 
     clear().unwrap();
-    if victories.iter().filter(|v| **v).count() > 1 {
-        for i in 0..victories.len() {
-            match victories[i] {
-                true => println!("Player {} threw the Ultimate Party! Win!", i + 1),
-                false => println!("Player {} loses!", i + 1),
-            }
-        }
-    } else {
-        for i in 0..victories.len() {
-            match victories[i] {
-                true => println!("Player {} is the Party Master! Win!", i + 1),
-                false => {}
-            }
-            println!("Everyone else loses! All of their vibes were way off!")
-        }
-    }
 
     match victories.len() {
         1 => match victories[0] {

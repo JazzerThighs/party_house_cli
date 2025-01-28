@@ -70,16 +70,16 @@ const fn guest_type_display(guesttype: &GuestType) -> &str {
 
 const fn ability_type_display(ability_type: &AbilityType) -> &str {
     match ability_type {
-        NoAbility => "",
+        NoAbility => "  ",
         Evac => "🔥",
         Shutter(_) => "📸",
-        Style(_) => "⬆️",
+        Style(_) => "⬆️ ",
         Quench => "🧯",
         StarSwap(_) => "🔄",
         Boot(_) => "🥾",
         LoveArrow(_) => "💘",
         Cheer => "🎊",
-        Summoning => "⬇️",
+        Summoning => "⬇️ ",
         Peek => "👀",
         Greet => "🚪",
     }
@@ -87,12 +87,11 @@ const fn ability_type_display(ability_type: &AbilityType) -> &str {
 
 pub fn display_guest(guest: &Guest) -> String {
     format!(
-        "{:>10} {} {:>2} {:>2} {} {:>2} {:>2}",
-        guest_type_display(&guest.guest_type),
+        "{:>12} {:>2} {:>2} {} {:>2} {}",
         match *guest.stars {
-            -1 => "*".yellow().on_red(),
-            1 => "*".yellow().on_black(),
-            _ => " ".white().on_black()
+            -1 => format!("*{}*", guest_type_display(&guest.guest_type)).yellow().on_red(),
+            1 => format!("*{}*", guest_type_display(&guest.guest_type)).yellow().on_black(),
+            _ => format!("{}", guest_type_display(&guest.guest_type)).white().on_black()
         },
         match *guest.popularity {
             x if x > 0 => x.to_string().yellow().on_black(),
@@ -114,7 +113,7 @@ pub fn display_guest(guest: &Guest) -> String {
             1.. => format!("+{}", guest.tagalongs).black().on_white()
         },
         match guest.ability_stock {
-            0 => "",
+            0 => "  ",
             1.. => ability_type_display(&guest.ability_type),
         }
     )
@@ -207,8 +206,8 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
     println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:", player.id + 1);
     println!("{}", 
         match victories.len() {
-            1 => format!("Going into Day {}/25", day_count),
-            2.. => format!("Going into Day {}", day_count),
+            1 => format!("Going into Day {}/25", day_count + 1),
+            2.. => format!("Going into Day {}", day_count + 1),
             0 => unreachable!()
         }
     );
@@ -241,8 +240,8 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
             display_guest(&store[i].0),
             match store[i].1 {
                 0.0 => "Sold Out!".to_string(),
-                INFINITY => format!("× ∞ => Cost: {}", store[i].0.cost.to_string().yellow().on_black()),
-                _ => format!("× {} => Cost: {}", store[i].1, store[i].0.cost.to_string().yellow().on_black()),
+                INFINITY => format!("× ∞ => Cost: {:>2}", store[i].0.cost.to_string().yellow().on_black()),
+                _ => format!("× {} => Cost: {:>2}", store[i].1, store[i].0.cost.to_string().yellow().on_black()),
             },
         );
     }
