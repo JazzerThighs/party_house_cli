@@ -111,7 +111,7 @@ pub fn display_guest(guest: &Guest) -> String {
         },
         match guest.tagalongs {
             0 => "".white().on_black(),
-            1.. => format!("+{}", guest.tagalongs).bright_blue().on_black()
+            1.. => format!("+{}", guest.tagalongs).black().on_white()
         },
         match guest.ability_stock {
             0 => "",
@@ -159,7 +159,7 @@ pub fn party_display(
     //     }
     //     println!("Last Chance!\n");
     // }
-    println!("[ {} ]", boxed_message.blue().on_black());
+    println!("[ {} ]", boxed_message.black().on_white());
     print!(
         "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n",
         "\"h\" => Open the door",
@@ -178,7 +178,7 @@ pub fn party_display(
         "=> Use that attendee's ability"
     );
     match &party.peek_slot {
-        Some(p) => println!("{}", display_guest(p)),
+        Some(p) => println!("🚪) {}", display_guest(p)),
         None => println!()
     }
     for i in 0..*party.capacity as usize {
@@ -194,7 +194,7 @@ pub fn party_display(
     // show that the party overflowed if it did
     if party.attendees.len() > *party.capacity as usize {
         println!(
-            "{}) {} {}",
+            "{:>2}) {} {}",
             party.attendees.len(),
             display_guest(&party.attendees[party.attendees.len() - 1]),
             "=> Overflow!".black().on_red()
@@ -217,7 +217,7 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
         "| POP: {:>2}/65 | $: {:>2}/30 | Capacity: {:>2}/34 | Rolodex: {:>2} |\n",
         (*player.popularity).to_string().yellow(),
         (*player.cash).to_string().green(),
-        (*player.capacity).to_string().blue(),
+        (*player.capacity).to_string().white().on_black(),
         player.rolodex.len()
     );
     print!(
@@ -233,7 +233,7 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
         store.len(),
         "=> Add one copy of that contact to your rolodex"
     );
-    print!("[ {} ]\n\n", boxed_message.blue().on_black());
+    print!("[ {} ]\n\n", boxed_message.black().on_white());
     for i in 0..store.len() {
         println!(
             "{:>2}) {}  {}",
@@ -241,8 +241,8 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
             display_guest(&store[i].0),
             match store[i].1 {
                 0.0 => "Sold Out!".to_string(),
-                INFINITY => format!("×  ∞ => Cost: {}", store[i].0.cost.to_string().yellow().on_black()),
-                _ => format!("× {:>2} => Cost: {}", store[i].1, store[i].0.cost.to_string().yellow().on_black()),
+                INFINITY => format!("× ∞ => Cost: {}", store[i].0.cost.to_string().yellow().on_black()),
+                _ => format!("× {} => Cost: {}", store[i].1, store[i].0.cost.to_string().yellow().on_black()),
             },
         );
     }

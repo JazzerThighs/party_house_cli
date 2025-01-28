@@ -147,6 +147,7 @@ fn main() {
                     }
                     match input.trim() {
                         "h" => {
+                            boxed_message = "";
                             party.state = IncomingGuest {
                                 amount: 1,
                                 greet: false,
@@ -192,17 +193,21 @@ fn main() {
                                 println!("{i:>2}) {}", display_guest(r));
                                 i += 1;
                             }
-                            println!("The following contacts have already showed up to the party:");
-                            for a in attendees_view {
-                                println!("{i:>2}) {}", display_guest(a));
-                                i += 1;
+                            if attendees_view.len() > 0 {
+                                println!("\nThe following contacts have already showed up to the party:");
+                                for a in attendees_view {
+                                    println!("{i:>2}) {}", display_guest(a));
+                                    i += 1;
+                                }
                             }
-                            println!("The following contacts cannot show up to the party today:");
-                            for b in booted_view {
-                                println!("{i:>2}) {}", display_guest(b));
-                                i += 1;
+                            if booted_view.len() > 0 {
+                                println!("\nThe following contacts cannot show up to the party today:");
+                                for b in booted_view {
+                                    println!("{i:>2}) {}", display_guest(b));
+                                    i += 1;
+                                }
                             }
-                            pause_for_enter("Press \"Enter\" to go back to the party...");
+                            pause_for_enter("\nPress \"Enter\" to go back to the party...");
                             break 'party_input;
                         }
                         "e" => {
@@ -212,7 +217,7 @@ fn main() {
                                 party.state = EndedSuccessfully;
                                 break 'party_input;
                             } else {
-                                println!("Don't end the party yet! This place is dead!");
+                                refresh!(party "Don't end the party yet! This place is dead!");
                                 continue 'party_input;
                             }
                         }
@@ -225,7 +230,7 @@ fn main() {
                                 };
                                 break 'party_input;
                             } else {
-                                println!("No one is at the front door!");
+                                refresh!(party "No one is at the front door!");
                                 continue 'party_input;
                             }
                         }
@@ -471,7 +476,7 @@ fn main() {
                                             match input.trim() {
                                                 i if i.parse::<usize>().map_or(false, |n| {
                                                     (1..=34).contains(&n)
-                                                        && n <= *party.capacity as usize
+                                                        && n <= party.attendees.len()
                                                 }) =>
                                                 {
                                                     party.attendees[idx].ability_stock -= 1;
@@ -564,7 +569,7 @@ fn main() {
                                         match input.trim() {
                                             i if i.parse::<usize>().map_or(false, |n| {
                                                 (1..=34).contains(&n)
-                                                    && n < *party.capacity as usize
+                                                    && n <= party.attendees.len() - 1
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
@@ -623,7 +628,7 @@ fn main() {
                                             greet: true,
                                         };
                                         party.ability_state = false;
-                                        continue 'party_input;
+                                        break 'party_input;
                                     }
                                 },
                                 Summoning => match (house_is_full, rolodex_is_empty) {
@@ -731,7 +736,7 @@ fn main() {
                         victories[player.id] = true;
                         boxed_message = "You threw the Ultimate Party! Win!"
                     } else {
-                        boxed_message = "Party Ended Successfully!"
+                        boxed_message = "Party Ended Successfully! Press \"Enter\" to continue..."
                     }
                     refresh!(party boxed_message);
                     pause_for_enter("");
@@ -739,6 +744,10 @@ fn main() {
                 _ => unreachable!(),
             }
             player.rolodex.extend(party.attendees.drain(0..));
+            if player.banned.guest.is_some() && player.banned.already_served_time {
+                player.rolodex.push(player.banned.guest.take().unwrap());
+            }
+            player.banned.already_served_time = true;
             if let Some(peek) = party.peek_slot.take() {
                 player.rolodex.push(peek);
             }
@@ -760,18 +769,8 @@ fn main() {
                     match input.trim() {
                         "r" => {
                             let mut rolodex_view: Vec<&Guest> = player.rolodex.iter().collect();
-                            let mut booted_view: Vec<&Guest> = player.booted.iter().collect();
-                            if let Some(banned) = &player.banned.guest {
-                                booted_view.push(&banned)
-                            };
+                            
                             rolodex_view.sort_by_key(|guest| {
-                                (
-                                    guest.sort_value,
-                                    Reverse(*guest.popularity),
-                                    Reverse(*guest.cash),
-                                )
-                            });
-                            booted_view.sort_by_key(|guest| {
                                 (
                                     guest.sort_value,
                                     Reverse(*guest.popularity),
@@ -786,12 +785,11 @@ fn main() {
                                 println!("{i:>2}) {}", display_guest(r));
                                 i += 1;
                             }
-                            println!("The following contacts cannot show up to the party tomorrow:");
-                            for b in booted_view {
+                            if let Some(b) = &player.banned.guest {
+                                println!("\nThe following contacts cannot show up to the party tomorrow:");
                                 println!("{i:>2}) {}", display_guest(b));
-                                i += 1;
                             }
-                            pause_for_enter("Press \"Enter\" to go back to the store...");
+                            pause_for_enter("\nPress \"Enter\" to go back to the store...");
                             continue 'store_input;
                         }
                         "c" => {

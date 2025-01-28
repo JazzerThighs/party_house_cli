@@ -237,10 +237,6 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
 }
 
 pub fn init_party(party: &mut Party, player: &mut Player, stars_to_win: usize) {
-    if player.banned.guest.is_some() && player.banned.already_served_time {
-        player.rolodex.push(player.banned.guest.take().unwrap());
-    }
-    player.banned.already_served_time = true;
     player.rolodex.extend(player.booted.drain(0..));
     for guest in player.rolodex.iter_mut() {
         guest.trouble = guest.trouble_base;
