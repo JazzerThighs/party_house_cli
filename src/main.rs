@@ -321,7 +321,7 @@ fn main() {
                                         match input.trim() {
                                             i if i.parse::<usize>().map_or(false, |n| {
                                                 (1..=34).contains(&n)
-                                                    && n <= *party.capacity as usize
+                                                    && n <= party.attendees.len()
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
@@ -389,7 +389,7 @@ fn main() {
                                         match input.trim() {
                                             i if i.parse::<usize>().map_or(false, |n| {
                                                 (1..=34).contains(&n)
-                                                    && n <= *party.capacity as usize
+                                                    && n <= party.attendees.len()
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
@@ -430,7 +430,7 @@ fn main() {
                                         match input.trim() {
                                             i if i.parse::<usize>().map_or(false, |n| {
                                                 (1..=34).contains(&n)
-                                                    && n <= *party.capacity as usize
+                                                    && n <= party.attendees.len()
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
