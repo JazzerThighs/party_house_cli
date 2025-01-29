@@ -379,7 +379,7 @@ fn main() {
                                     }
                                 }
                                 Style(mut target) => {
-                                    refresh!(party "Select a guest to Photograph.");
+                                    refresh!(party "Select a guest to Style.");
                                     'style_input: loop {
                                         let mut input = String::new();
                                         if let Err(e) = stdin().read_line(&mut input) {

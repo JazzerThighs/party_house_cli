@@ -160,7 +160,7 @@ pub fn party_display(
     // }
     println!("[ {} ]", boxed_message.black().on_white());
     print!(
-        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n",
+        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n {}\n",
         "\"h\" => Open the door",
         "\"r\" => View your rolodex",
         "\"e\" => End the party",
@@ -174,7 +174,13 @@ pub fn party_display(
         },
         "Integers 1..=",
         *party.capacity,
-        "=> Use that attendee's ability"
+        "=> Use that attendee's ability",
+        match party.attendees.iter().filter(|g| g.trouble).count() as i8
+            - party.attendees.iter().filter(|g| g.chill).count() as i8
+            == 2 {
+                true => "X This party is getting out of hand! X".red().on_black(),
+                false => "".white().on_black()
+            }
     );
     match &party.peek_slot {
         Some(p) => println!("🚪) {}", display_guest(p)),
