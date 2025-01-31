@@ -70,28 +70,18 @@ fn main() {
                             };
                             let newest_guest = party.attendees.len() - 1;
                             if greet {
-                                player
-                                    .add_pop_from_guest(*party.attendees[newest_guest].popularity);
-                                player.add_cash_from_guest(*party.attendees[newest_guest].cash);
-                                player
-                                    .add_pop_from_guest((party.attendees[newest_guest].bonus_pop)(
-                                        &party,
-                                    ));
+                                player.add_pop_from_guest(*party.attendees[newest_guest].popularity);
+                                if *party.attendees[newest_guest].cash >= 0 {
+                                    player.add_cash_from_guest(*party.attendees[newest_guest].cash);
+                                }
+                                player.add_pop_from_guest((party.attendees[newest_guest].bonus_pop)(&party));
                                 if party.attendees[newest_guest].guest_type == DANCER {
-                                    player.add_pop_from_guest(min(
-                                        16,
-                                        party
-                                            .attendees
-                                            .iter()
-                                            .filter(|a| a.guest_type == DANCER)
-                                            .count()
-                                            .pow(2) as i8,
-                                    ))
+                                    player.add_pop_from_guest(min(16, party.attendees.iter().filter(|a| a.guest_type == DANCER).count().pow(2) as i8,))
                                 };
-                                player.add_cash_from_guest((party.attendees[newest_guest]
-                                    .bonus_cash)(
-                                    &party
-                                ));
+                                player.add_cash_from_guest((party.attendees[newest_guest].bonus_cash)(&party));
+                                if *party.attendees[newest_guest].cash < 0 {
+                                    player.add_cash_from_guest(*party.attendees[newest_guest].cash);
+                                }
                             }
                             (party.attendees[newest_guest].entrance_effect)(
                                 &mut party.attendees[newest_guest],
