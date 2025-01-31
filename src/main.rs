@@ -224,6 +224,11 @@ fn main() {
                                 continue 'party_input;
                             }
                         }
+                        "i" => {
+                            display_information();
+                            pause_for_enter("\nPress \"Enter\" to go back to the party...");
+                            break 'party_input;
+                        }
                         i if i.parse::<usize>().map_or(false, |n| {
                             (1..=34).contains(&n)
                                 && n <= *party.capacity as usize
@@ -799,6 +804,11 @@ fn main() {
                             continue 'store_input;
                         }
                         "e" => break 'store,
+                        "i" => {
+                            display_information();
+                            pause_for_enter("\nPress \"Enter\" to go back to the store...");
+                            continue 'store_input;
+                        }
                         i if i
                             .parse::<usize>()
                             .map_or(false, |n| (1..=store.len()).contains(&n)) =>

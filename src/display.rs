@@ -160,10 +160,11 @@ pub fn party_display(
     // }
     println!("[ {} ]", boxed_message.black().on_white());
     print!(
-        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n {}\n",
+        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n {}\n",
         "\"h\" => Open the door",
         "\"r\" => View your rolodex",
         "\"e\" => End the party",
+        "\"i\" => View Information",
         match party.peek_slot {
             Some(_) => "\"b\" => Boot the guest at the front door",
             None => "",
@@ -226,7 +227,7 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
         player.rolodex.len()
     );
     print!(
-        "Controls:\n {}\n {}\n {}\n {}{} {}\n\n",
+        "Controls:\n {}\n {}\n {}\n {}\n {}{} {}\n\n",
         "\"r\" => View your rolodex",
         match *player.capacity {
             5..=33 => "\"c\" => Increase the capacity of your house",
@@ -234,6 +235,7 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
             ..=4 => unreachable!(),
         },
         "\"e\" => Finish Shopping and move on to the next day of partying",
+        "\"i\" => View Information",
         "Integers 1..=",
         store.len(),
         "=> Add one copy of that contact to your rolodex"
@@ -257,4 +259,49 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
         34.. => println!("House Capacity Maxed Out! (34 Spots Max)"),
         ..=4 => unreachable!(),
     }
+}
+
+#[allow(non_snake_case)]
+#[rustfmt::skip]
+pub fn display_information() {
+    let GUEST = "NON_STAR_GUEST".white().on_black();
+    let STAR = "*STAR_GUEST*".yellow().on_black();
+    let NEG_STAR = "*NEG_STAR_GUEST*".yellow().on_red();
+    let POP = "POP".yellow().on_black();
+    let NEG_POP = "-POP".yellow().on_red();
+    let CASH = "$_CASH".green().on_black();
+    let NEG_CASH = "-$_CASH".green().on_red();
+    let TROUBLE = "X_TROUBLE".red().on_black();
+    let CHILL = "X_CHILL".black().on_white();
+    let TAGALONGS = "+TAGALONGS".black().on_white();
+
+    clear().unwrap();
+    println!("Press Enter to Close Information...");
+
+    println!("\nWin Condition: End a party successfully when {STAR}s minus {NEG_STAR}s is greater than or equal to the designated amount.");
+    
+    println!("\nUniversal Guest Attributes:\n{GUEST}/{STAR}/{NEG_STAR}\n{POP}/{NEG_POP}\n{CASH}\n{NEG_CASH}\n{TROUBLE}/{CHILL}\n{TAGALONGS}\nAbility_Available_Symbol");
+    
+    println!("\nAbility Types:");
+    println!("Evac 🔥: Remove all attendees from the party and reshuffle them back into the rolodex."); 
+    println!("Shutter 📸: Score a single attendee for their {POP}/{NEG_POP}, {CASH}/{NEG_CASH}, and Bonuses.");
+    println!("Style ⬆️ : Increase the Pop of one attendee by 1.");
+    println!("Quench 🧯: Chill out all {TROUBLE} currently in the party.");
+    println!("StarSwap 🔄: Swap out a {GUEST} attendee for a {STAR}/{NEG_STAR} from the rolodex, or swap out a {STAR}/{NEG_STAR} attendee for a {GUEST} from the rolodex.");
+    println!("Boot 🥾: Kick out 1 attendee, also prevents them from coming back today.");
+    println!("LoveArrow 💘: Kick out 2 adjacent attendees, also provents them from coming back today.");
+    println!("Cheer 🎊:  Replenish all non-Cheer abilities for all of the attendees.");
+    println!("Summoning ⬇️ : Summon 1 guest from the rolodex to join the party.");
+    println!("Peek 👀: Find out who is next in line at the front door; If they are then booted, that guest is prevented from coming back today.");
+    println!("Greet 🚪: Open the door for the next guest in line for the party, score them for their {POP}/{NEG_POP}, {CASH}/{NEG_CASH}, and Bonuses, as well as doing the same for any {TAGALONGS} that they bring with them.");
+
+    println!("\nSpecial guest Effects:");
+    println!("COMEDIAN: +5 {POP} Bonus if the party is full to capacity.");
+    println!("INTROVERT: +1 {POP} Bonus for every empty spot in the party.");
+    println!("DANCER:\n +1 {POP} Bonus => 1 DANCER present.\n +4 {POP} Bonus => 2 DANCERs present.\n +9 {POP} Bonus => 3 DANCERs present.\n +16 {POP} Bonus => 4 or more DANCERs present.");
+    println!("MASCOT: +1 {POP} Bonus for every OLD_FRIEND present.");
+    println!("WRITER: +2 {POP} Bonus for each {TROUBLE} present.");
+    println!("BARTENDER: +2 {CASH} Bonus for each {TROUBLE} present.");
+    println!("CLIMBER: +1 {POP} added to Base Stat each time they enter a party.");
+    println!("WAREWOLF: Toggle between {TROUBLE} and Zero-{TROUBLE} each time they enter a party.");
 }
