@@ -236,18 +236,24 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
     store
 }
 
-pub fn init_party(party: &mut Party, player: &mut Player, stars_to_win: usize) {
+pub fn handle_end_of_party(player: &mut Player, party: &mut Party) {
+    player.rolodex.extend(party.attendees.drain(0..));
     player.rolodex.extend(player.booted.drain(0..));
+    if player.banned.guest.is_some() && player.banned.already_served_time {
+        player.rolodex.push(player.banned.guest.take().unwrap());
+    }
+    player.banned.already_served_time = true;
+    if let Some(peek) = party.peek_slot.take() {
+        player.rolodex.push(peek);
+    }
     for guest in player.rolodex.iter_mut() {
         guest.trouble = guest.trouble_base;
         guest.chill = guest.chill_base;
         guest.ability_stock = guest.ability_base;
     }
-    *party = Party {
-        capacity: player.capacity.clone(),
-        stars_to_win,
-        ..Default::default()
-    };
-    let mut rng = thread_rng();
-    player.rolodex.shuffle(&mut rng);
+    if let Some(banned) = &mut player.banned.guest {
+        banned.trouble = banned.trouble_base;
+        banned.chill = banned.chill_base;
+        banned.ability_stock = banned.ability_base;
+    }
 }

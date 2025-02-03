@@ -27,12 +27,25 @@ fn main() {
     let mut store: Vec<(Guest, f32)> = init_scenerio(num_players);
     let mut day_count: usize = 1;
     let mut victories: Vec<bool> = vec![false; num_players];
-    let mut party: Party = Party::default();
 
     'game: loop {
         clear().unwrap();
         for player in players.iter_mut() {
-            init_party(&mut party, player, star_guest_arrivals_for_win);
+            for guest in player.rolodex.iter_mut() {
+                guest.trouble = guest.trouble_base;
+                guest.chill = guest.chill_base;
+                guest.ability_stock = guest.ability_base;
+            }
+            if let Some(banned) = &mut player.banned.guest {
+                banned.trouble = banned.trouble_base;
+                banned.chill = banned.chill_base;
+                banned.ability_stock = banned.ability_base;
+            }
+            let mut party = Party {
+                capacity: player.capacity.clone(),
+                stars_to_win: star_guest_arrivals_for_win,
+                ..Default::default()
+            };
             let mut boxed_message: &str = "";
             macro_rules! refresh {
                 (party $message:expr) => {
@@ -305,7 +318,7 @@ fn main() {
                                         break 'party_input;
                                     }
                                 },
-                                Shutter(mut target) => {
+                                Shutter => {
                                     refresh!(party "Select a guest to Photograph.");
                                     'shutter_input: loop {
                                         let mut input = String::new();
@@ -321,7 +334,7 @@ fn main() {
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
                                                 party.ability_state = false;
-                                                target = i.parse::<usize>().unwrap() - 1;
+                                                let target = i.parse::<usize>().unwrap() - 1;
                                                 player.add_pop_from_guest(
                                                     *party.attendees[target].popularity,
                                                 );
@@ -373,7 +386,7 @@ fn main() {
                                         }
                                     }
                                 }
-                                Style(mut target) => {
+                                Style(pop_up) => {
                                     refresh!(party "Select a guest to Style.");
                                     'style_input: loop {
                                         let mut input = String::new();
@@ -389,8 +402,8 @@ fn main() {
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
                                                 party.ability_state = false;
-                                                target = i.parse::<usize>().unwrap() - 1;
-                                                party.attendees[target].popularity += 1;
+                                                let target = i.parse::<usize>().unwrap() - 1;
+                                                party.attendees[target].popularity += pop_up as i8;
                                                 party.state = IncomingGuest {
                                                     amount: 0,
                                                     greet: false,
@@ -414,7 +427,7 @@ fn main() {
                                         }
                                     }
                                 }
-                                Boot(mut target) => {
+                                Boot => {
                                     refresh!(party "Select a guest to Kick from the party.");
                                     'boot_input: loop {
                                         let mut input = String::new();
@@ -430,7 +443,7 @@ fn main() {
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
                                                 party.ability_state = false;
-                                                target = i.parse::<usize>().unwrap() - 1;
+                                                let target = i.parse::<usize>().unwrap() - 1;
                                                 player.booted.push(party.attendees[target].clone());
                                                 party.attendees.remove(target);
                                                 party.state = IncomingGuest {
@@ -456,7 +469,7 @@ fn main() {
                                         }
                                     }
                                 }
-                                StarSwap(mut target) => match (
+                                StarSwap => match (
                                     party.attendees.iter().filter(|a| *a.stars > 0).count() > 0,
                                     player.rolodex.iter().filter(|a| *a.stars > 0).count() > 0,
                                 ) {
@@ -474,8 +487,7 @@ fn main() {
                                                         && n <= party.attendees.len()
                                                 }) =>
                                                 {
-                                                    party.attendees[idx].ability_stock -= 1;
-                                                    target = i.parse::<usize>().unwrap() - 1;
+                                                    let target = i.parse::<usize>().unwrap() - 1;
                                                     let mut replacement: Guest = Guest::default();
                                                     let goes_away: Guest;
                                                     for r in 0..player.rolodex.len() {
@@ -515,6 +527,7 @@ fn main() {
                                                             }
                                                         }
                                                     }
+                                                    party.attendees[idx].ability_stock -= 1;
                                                     goes_away = party.attendees[target].clone();
                                                     party.attendees.remove(target);
                                                     party.attendees.insert(target, replacement);
@@ -544,12 +557,12 @@ fn main() {
                                         }
                                     }
                                     (false, false) => {
-                                        refresh!(party "There are neither any star guests in the rolodex nor the party.");
                                         party.ability_state = false;
+                                        refresh!(party "There are neither any star guests in the rolodex nor the party.");
                                         continue 'party_input;
                                     }
                                 },
-                                LoveArrow(mut target) => {
+                                LoveArrow => {
                                     if party.attendees.len() < 2 {
                                         refresh!(party "At least 2 partygoers need to be paired up by a Cupid's Arrow.");
                                         continue 'party_input;
@@ -568,7 +581,7 @@ fn main() {
                                             }) =>
                                             {
                                                 party.attendees[idx].ability_stock -= 1;
-                                                target = i.parse::<usize>().unwrap() - 1;
+                                                let target = i.parse::<usize>().unwrap() - 1;
                                                 player.booted.push(party.attendees[target].clone());
                                                 player
                                                     .booted
@@ -738,17 +751,11 @@ fn main() {
                 }
                 _ => unreachable!(),
             }
-            player.rolodex.extend(party.attendees.drain(0..));
-            if player.banned.guest.is_some() && player.banned.already_served_time {
-                player.rolodex.push(player.banned.guest.take().unwrap());
-            }
-            player.banned.already_served_time = true;
-            if let Some(peek) = party.peek_slot.take() {
-                player.rolodex.push(peek);
-            }
+
+            handle_end_of_party(player, &mut party);
 
             'store: {
-                if victories[0..=player.id].iter().any(|v| *v) {
+                if victories[0..=player.id].iter().any(|v| *v) || (victories.len() == 1 && day_count == 25) {
                     break 'store;
                 }
                 let mut boxed_message: &str = "";

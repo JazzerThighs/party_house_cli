@@ -68,20 +68,20 @@ const fn guest_type_display(guesttype: &GuestType) -> &str {
     }
 }
 
-const fn ability_type_display(ability_type: &AbilityType) -> &str {
+fn ability_type_display(ability_type: &AbilityType) -> String {
     match ability_type {
-        NoAbility => "  ",
-        Evac => "🔥",
-        Shutter(_) => "📸",
-        Style(_) => "⬆️ ",
-        Quench => "🧯",
-        StarSwap(_) => "🔄",
-        Boot(_) => "🥾",
-        LoveArrow(_) => "💘",
-        Cheer => "🎊",
-        Summoning => "⬇️ ",
-        Peek => "👀",
-        Greet => "🚪",
+        NoAbility => "   ".to_string(),
+        Evac => "🔥 ".to_string(),
+        Shutter => "📸 ".to_string(),
+        Style(p) => format!("⬆️ {p}"),
+        Quench => "🧯 ".to_string(),
+        StarSwap => "🔄 ".to_string(),
+        Boot => "🥾 ".to_string(),
+        LoveArrow => "💘 ".to_string(),
+        Cheer => "🎊 ".to_string(),
+        Summoning => "⬇️  ".to_string(),
+        Peek => "👀 ".to_string(),
+        Greet => "🚪 ".to_string(),
     }
 }
 
@@ -89,9 +89,15 @@ pub fn display_guest(guest: &Guest) -> String {
     format!(
         "{:>12} {:>2} {:>2} {} {:>2} {}",
         match *guest.stars {
-            -1 => format!("*{}*", guest_type_display(&guest.guest_type)).yellow().on_red(),
-            1 => format!("*{}*", guest_type_display(&guest.guest_type)).yellow().on_black(),
-            _ => format!("{}", guest_type_display(&guest.guest_type)).white().on_black()
+            -1 => format!("*{}*", guest_type_display(&guest.guest_type))
+                .yellow()
+                .on_red(),
+            1 => format!("*{}*", guest_type_display(&guest.guest_type))
+                .yellow()
+                .on_black(),
+            _ => format!("{}", guest_type_display(&guest.guest_type))
+                .white()
+                .on_black(),
         },
         match *guest.popularity {
             x if x > 0 => x.to_string().yellow().on_black(),
@@ -110,10 +116,10 @@ pub fn display_guest(guest: &Guest) -> String {
         },
         match guest.tagalongs {
             0 => "".white().on_black(),
-            1.. => format!("+{}", guest.tagalongs).black().on_white()
+            1.. => format!("+{}", guest.tagalongs).black().on_white(),
         },
         match guest.ability_stock {
-            0 => "  ",
+            0 => "   ".to_string(),
             1.. => ability_type_display(&guest.ability_type),
         }
     )
@@ -146,7 +152,7 @@ pub fn party_display(
         match victories.len() {
             1 => format!("Day {}/25", day_count),
             2.. => format!("Day {}", day_count),
-            0 => unreachable!()
+            0 => unreachable!(),
         },
         *party.capacity
     );
@@ -160,32 +166,52 @@ pub fn party_display(
     // }
     println!("[ {} ]", boxed_message.black().on_white());
     print!(
-        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}\n {}{} {}\n {}\n",
-        "\"h\" => Open the door",
-        "\"r\" => View your rolodex",
-        "\"e\" => End the party",
-        "\"i\" => View Information",
-        match party.peek_slot {
-            Some(_) => "\"b\" => Boot the guest at the front door",
-            None => "",
+        "Controls:\n {}\n {}\n {}\n {}\n {}\n {}\n {}\n {}\n",
+        match party.ability_state {
+            true => "",
+            false => "\"h\" => Open the door",
+        },
+        match party.ability_state {
+            true => "",
+            false => "\"r\" => View your rolodex",
+        },
+        match party.ability_state {
+            true => "",
+            false => "\"e\" => End the party",
+        },
+        match party.ability_state {
+            true => "",
+            false => "\"i\" => View Information",
+        },
+        match party.ability_state {
+            true => "",
+            false => match party.peek_slot {
+                Some(_) => "\"b\" => Boot the guest at the front door",
+                None => "",
+            },
         },
         match party.ability_state {
             true => "\"n\" => Decide not to use the currently selected ability",
             false => "",
         },
-        "Integers 1..=",
-        *party.capacity,
-        "=> Use that attendee's ability",
+        match party.ability_state {
+            true => "".to_string(),
+            false => format!(
+                "Integers 1..={} => Use that attendee's ability",
+                *party.capacity
+            ),
+        },
         match party.attendees.iter().filter(|g| g.trouble).count() as i8
             - party.attendees.iter().filter(|g| g.chill).count() as i8
-            == 2 {
-                true => "X This party is getting out of hand! X".red().on_black(),
-                false => "".white().on_black()
-            }
+            == 2
+        {
+            true => "X This party is getting out of hand! X".red().on_black(),
+            false => "".white().on_black(),
+        }
     );
     match &party.peek_slot {
         Some(p) => println!("🚪) {}", display_guest(p)),
-        None => println!()
+        None => println!(),
     }
     for i in 0..*party.capacity as usize {
         println!(
@@ -200,25 +226,37 @@ pub fn party_display(
     // show that the party overflowed if it did
     if party.attendees.len() > *party.capacity as usize {
         println!(
-            "{:>2}) {} {}",
-            party.attendees.len(),
+            "{:>2}{} {} {}",
+            party.attendees.len().to_string().white().on_red(),
+            ")".white().on_red(),
             display_guest(&party.attendees[party.attendees.len() - 1]),
             "=> Overflow!".black().on_red()
         );
     }
 }
 
-pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec<bool>, day_count: usize, stars_to_win: &usize, boxed_message: &String) {
+pub fn store_display(
+    store: &Vec<(Guest, f32)>,
+    player: &Player,
+    victories: &Vec<bool>,
+    day_count: usize,
+    stars_to_win: &usize,
+    boxed_message: &String,
+) {
     clear().unwrap();
     println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:", player.id + 1);
-    println!("{}", 
+    println!(
+        "{}",
         match victories.len() {
             1 => format!("Going into Day {}/25", day_count + 1),
             2.. => format!("Going into Day {}", day_count + 1),
-            0 => unreachable!()
+            0 => unreachable!(),
         }
     );
-    println!("Win Condition: {} Stars in One Party", stars_to_win.to_string().yellow().on_black());
+    println!(
+        "Win Condition: {} Stars in One Party",
+        stars_to_win.to_string().yellow().on_black()
+    );
     println!(
         "| POP: {:>2}/65 | $: {:>2}/30 | Capacity: {:>2}/34 | Rolodex: {:>2} |\n",
         (*player.popularity).to_string().yellow(),
@@ -248,13 +286,23 @@ pub fn store_display(store: &Vec<(Guest, f32)>, player: &Player, victories: &Vec
             display_guest(&store[i].0),
             match store[i].1 {
                 0.0 => "Sold Out!".to_string(),
-                INFINITY => format!("× ∞ => Cost: {:>2}", store[i].0.cost.to_string().yellow().on_black()),
-                _ => format!("× {} => Cost: {:>2}", store[i].1, store[i].0.cost.to_string().yellow().on_black()),
+                INFINITY => format!(
+                    "× ∞ => Cost: {:>2}",
+                    store[i].0.cost.to_string().yellow().on_black()
+                ),
+                _ => format!(
+                    "× {} => Cost: {:>2}",
+                    store[i].1,
+                    store[i].0.cost.to_string().yellow().on_black()
+                ),
             },
         );
     }
     match *player.capacity {
-        5..=15 => println!("Upgrade Capacity => Cost: {}", (*player.capacity - 3).to_string().green().on_black()),
+        5..=15 => println!(
+            "Upgrade Capacity => Cost: {}",
+            (*player.capacity - 3).to_string().green().on_black()
+        ),
         16..=33 => println!("Upgrade Capacity => Cost: {}", "12".green().on_black()),
         34.. => println!("House Capacity Maxed Out! (34 Spots Max)"),
         ..=4 => unreachable!(),
@@ -276,8 +324,7 @@ pub fn display_information() {
     let TAGALONGS = "+TAGALONGS".black().on_white();
 
     clear().unwrap();
-    println!("Press Enter to Close Information...");
-
+    println!("Party House is a Deck Builder! During the Party phase, invite guests by opening the front door. Guests will be pulled at random from your rolodex, at the goal is to invite lots of guests so that you end up with lots of {POP} and {CASH} to spend in the store. At the end of the party, the guests' {POP} and {CASH} attributes will be tallied up, along with any guest-specific Bonuses that they possess. {POP} is self-explanatory, but {CASH} is not. If you end up with less {POP} than you started with, you just end up with 0 {POP}. However, if you go into the negatives for {CASH}, each {CASH} point will be instead deducted from your {POP} balance, -7 {POP} points per {CASH} point.\nOne must worry about {TROUBLE}. If too many {TROUBLE}makers show up to the party, the police will be called and the party will end without granting you any {POP}, {CASH}, or Bonuses! Same goes for if the party overflows; If a guest has {TAGALONGS}, that means that they will forcably bring along their own plus-1s (from your rolodex), even if those plus-1s cannot fit into the house, and the fire marshal will shut it down! Be careful if you have them in the deck, because they can also bring each other for massive chains of unwanted guests!");
     println!("\nWin Condition: End a party successfully when {STAR}s minus {NEG_STAR}s is greater than or equal to the designated amount.");
     
     println!("\nUniversal Guest Attributes:\n{GUEST}/{STAR}/{NEG_STAR}\n{POP}/{NEG_POP}\n{CASH}\n{NEG_CASH}\n{TROUBLE}/{CHILL}\n{TAGALONGS}\nAbility_Available_Symbol");
@@ -296,12 +343,28 @@ pub fn display_information() {
     println!("Greet 🚪: Open the door for the next guest in line for the party, score them for their {POP}/{NEG_POP}, {CASH}/{NEG_CASH}, and Bonuses, as well as doing the same for any {TAGALONGS} that they bring with them.");
 
     println!("\nSpecial guest Effects:");
-    println!("COMEDIAN: +5 {POP} Bonus if the party is full to capacity.");
-    println!("INTROVERT: +1 {POP} Bonus for every empty spot in the party.");
-    println!("DANCER:\n +1 {POP} Bonus => 1 DANCER present.\n +4 {POP} Bonus => 2 DANCERs present.\n +9 {POP} Bonus => 3 DANCERs present.\n +16 {POP} Bonus => 4 or more DANCERs present.");
-    println!("MASCOT: +1 {POP} Bonus for every OLD_FRIEND present.");
-    println!("WRITER: +2 {POP} Bonus for each {TROUBLE} present.");
-    println!("BARTENDER: +2 {CASH} Bonus for each {TROUBLE} present.");
-    println!("CLIMBER: +1 {POP} added to Base Stat each time they enter a party.");
-    println!("WAREWOLF: Toggle between {TROUBLE} and Zero-{TROUBLE} each time they enter a party.");
+    let (friends, randos, stars) = guest_lists();
+    for (i, j) in friends.iter() {
+        if friends[i].special_info != "".to_string() {
+            println!("{}: {}", guest_type_display(i), j.special_info);
+        }
+    }
+    for (i, j) in randos.iter() {
+        if randos[i].special_info != "".to_string() {
+            println!("{}: {}", guest_type_display(i), j.special_info);
+        }
+    }
+    for (i, j) in stars.iter() {
+        if stars[i].special_info != "".to_string() {
+            println!("{}: {}", guest_type_display(i), j.special_info);
+        }
+    }
+    // println!("COMEDIAN: +5 {POP} Bonus if the party is full to capacity.");
+    // println!("INTROVERT: +1 {POP} Bonus for every empty spot in the party.");
+    // println!("DANCER:\n +1 {POP} Bonus => 1 DANCER present.\n +4 {POP} Bonus => 2 DANCERs present.\n +9 {POP} Bonus => 3 DANCERs present.\n +16 {POP} Bonus => 4 or more DANCERs present.");
+    // println!("MASCOT: +1 {POP} Bonus for every OLD_FRIEND present.");
+    // println!("WRITER: +2 {POP} Bonus for each {TROUBLE} present.");
+    // println!("BARTENDER: +2 {CASH} Bonus for each {TROUBLE} present.");
+    // println!("CLIMBER: +1 {POP} added to Base Stat each time they enter a party.");
+    // println!("WAREWOLF: Toggle between {TROUBLE} and Zero-{TROUBLE} each time they enter a party.");
 }

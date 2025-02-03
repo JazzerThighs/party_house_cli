@@ -1,6 +1,7 @@
 use crate::{clampedi8::ClampedI8, Party};
 use nestify::nest;
 use better_default::Default;
+use colored::*;
 use std::{cmp::max, collections::HashMap};
 
 nest!(
@@ -8,6 +9,7 @@ nest!(
     pub struct Guest {
         pub id: usize,
         pub sort_value: u8,
+        pub special_info: String,
         #[default('🫥')]
         pub emoji: char,
         pub cost: u8,
@@ -33,6 +35,7 @@ nest!(
         
         pub ability_base: u8,
         pub ability_stock: u8,
+
         pub ability_type: 
             #[derive(PartialEq, Eq)]
             pub enum AbilityType {
@@ -41,11 +44,11 @@ nest!(
                 Evac,
                 Quench,
                 Cheer,
-                Shutter(usize),
+                Shutter,
                 Style(usize),
-                StarSwap(usize),
-                Boot(usize),
-                LoveArrow(usize),
+                StarSwap,
+                Boot,
+                LoveArrow,
                 Summoning,
                 Peek,
                 Greet,
@@ -114,6 +117,7 @@ nest!(
     }
 );
 
+#[allow(non_snake_case)]
 pub fn guest_lists() -> (
     HashMap<GuestType, Guest>,
     HashMap<GuestType, Guest>,
@@ -137,6 +141,10 @@ pub fn guest_lists() -> (
             );
         };
     }
+
+    let POP = "POP".yellow().on_black();
+    let CASH = "$_CASH".green().on_black();
+    let TROUBLE = "X_TROUBLE".red().on_black();
     
     // Friends, in every starting rolodex
     insert_guest!(
@@ -190,7 +198,7 @@ pub fn guest_lists() -> (
         emoji: '👮',
         cost: 4,
         full_house_ability: Yes,
-        ability_type: Boot(0),
+        ability_type: Boot,
         ability_base: 1,
     );
     insert_guest!(
@@ -235,6 +243,7 @@ pub fn guest_lists() -> (
         randos,
         COMEDIAN,
         sort_value: 51,
+        special_info: format!("+5 {POP} Bonus if the party is full to capacity."),
         emoji: '🤣',
         cost: 5,
         cash: ClampedI8::pop_cash(-1),
@@ -248,13 +257,14 @@ pub fn guest_lists() -> (
         cost: 4,
         popularity: ClampedI8::pop_cash(2),
         cash: ClampedI8::pop_cash(-1),
-        ability_type: Peek,
+        ability_type: Summoning,
         ability_base: 1,
     );
     insert_guest!(
         randos,
         INTROVERT,
         sort_value: 45,
+        special_info: format!("+1 {POP} Bonus for every empty spot in the party."),
         emoji: '😶',
         cost: 4,
         popularity: ClampedI8::pop_cash(1),
@@ -284,6 +294,7 @@ pub fn guest_lists() -> (
         randos,
         DANCER,
         sort_value: 70,
+        special_info: format!("\n +1 {POP} Bonus => 1 DANCER present.\n +4 {POP} Bonus => 2 DANCERs present.\n +9 {POP} Bonus => 3 DANCERs present.\n +16 {POP} Bonus => 4 or more DANCERs present."),
         emoji: '💃',
         cost: 7,
     );
@@ -299,6 +310,7 @@ pub fn guest_lists() -> (
         randos,
         MASCOT,
         sort_value: 54,
+        special_info: format!("+1 {POP} Bonus for every OLD_FRIEND present."),
         emoji: '😸',
         cost: 5,
         popularity: ClampedI8::pop_cash(1),
@@ -312,7 +324,7 @@ pub fn guest_lists() -> (
         cost: 9,
         popularity: ClampedI8::pop_cash(2),
         full_house_ability: Yes,
-        ability_type: Boot(0),
+        ability_type: Boot,
         ability_base: 1,
     );
     insert_guest!(
@@ -357,6 +369,7 @@ pub fn guest_lists() -> (
         randos,
         WRITER,
         sort_value: 81,
+        special_info: format!("WRITER: +2 {POP} Bonus for each {TROUBLE} present."),
         emoji: '🖋',
         cost: 8,
         popularity: ClampedI8::pop_cash(1),
@@ -371,7 +384,7 @@ pub fn guest_lists() -> (
         popularity: ClampedI8::pop_cash(1),
         cash: ClampedI8::pop_cash(-1),
         full_house_ability: Yes,
-        ability_type: Shutter(0),
+        ability_type: Shutter,
         ability_base: 1,
     );
     insert_guest!(
@@ -420,6 +433,7 @@ pub fn guest_lists() -> (
         randos,
         BARTENDER,
         sort_value: 110,
+        special_info: format!("+2 {CASH} Bonus for each {TROUBLE} present."),
         emoji: '🍺',
         cost: 11,
         popularity: ClampedI8::pop_cash(1),
@@ -443,7 +457,7 @@ pub fn guest_lists() -> (
         cost: 8,
         popularity: ClampedI8::pop_cash(1),
         full_house_ability: Yes,
-        ability_type: LoveArrow(0),
+        ability_type: LoveArrow,
         ability_base: 1,
     );
     insert_guest!(
@@ -454,7 +468,7 @@ pub fn guest_lists() -> (
         cost: 5,
         popularity: ClampedI8::pop_cash(1),
         full_house_ability: Yes,
-        ability_type: StarSwap(0),
+        ability_type: StarSwap,
         ability_base: 1,
     );
     insert_guest!(
@@ -471,6 +485,7 @@ pub fn guest_lists() -> (
         randos,
         CLIMBER,
         sort_value: 120,
+        special_info: format!("+1 {POP} added to Base Stat each time they enter a party."),
         emoji: '🤳',
         cost: 12,
         // Popularity increases by 1 time it enters the party, through either the door or by summoning. Can gain more popularity within the span of 1 party if they arrive, are evac'd, and then arrive again.
@@ -484,17 +499,17 @@ pub fn guest_lists() -> (
         cost: 7,
         cash: ClampedI8::pop_cash(-1),
         full_house_ability: Yes,
-        ability_type: Style(0),
+        ability_type: Style(1),
         ability_base: 1,
     );
     insert_guest!(
         randos,
         WAREWOLF,
         sort_value: 60,
+        special_info: format!("Toggles between {TROUBLE} and Zero-{TROUBLE} each time they enter a party."),
         emoji: '🐺',
         cost: 5,
         popularity: ClampedI8::pop_cash(4),
-        // Causes trouble every other time it enters the party, through either the door or by summoning. Can flipflop within the span of 1 party if they arrive, are evac'd, and then arrive again.
         entrance_effect: |g| {
             g.trouble_base = !g.trouble_base;
             g.trouble = g.trouble_base;
@@ -581,7 +596,7 @@ pub fn guest_lists() -> (
         cost: 45,
         stars: ClampedI8::stars(1),
         full_house_ability: Yes,
-        ability_type: Boot(0),
+        ability_type: Boot,
         ability_base: 1,
     );
 
