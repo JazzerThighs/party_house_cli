@@ -772,18 +772,20 @@ fn main() {
                         >= star_guest_arrivals_for_win
                     {
                         victories[player.id] = true;
-                        boxed_message = "You threw the Ultimate Party! Win!"
+                        refresh!(party "You threw the Ultimate Party! Win!");
+                        pause_for_enter("");
+                        break;
                     } else {
-                        boxed_message = "Party Ended Successfully!"
+                        refresh!(party "Party Ended Successfully!");
                     }
-                    refresh!(party boxed_message);
 
                     let POP = "POP".yellow().on_black();
                     let NEG_POP = "-POP".yellow().on_red();
                     let CASH = "$_CASH".green().on_black();
                     let NEG_CASH = "-$_CASH".green().on_red();
 
-                    println!("\nSum of {POP}/{NEG_POP} attributes: {}", party.attendees.iter().map(|a| *a.popularity).sum::<i8>());
+                    println!("\nSum of {POP} attributes: {}", party.attendees.iter().filter(|a| *a.popularity >= 0).map(|a| *a.popularity).sum::<i8>());
+                    println!("\nSum of {NEG_POP} attributes: {}", party.attendees.iter().filter(|a| *a.popularity < 0).map(|a| *a.popularity).sum::<i8>());
                     println!("Sum of {CASH} attributes: {}", party.attendees.iter().filter(|a| *a.cash >= 0).map(|a| *a.cash).sum::<i8>().to_string().green().on_black());
                     for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) > 0).filter(|a| a.guest_type != GuestType::DANCER) {
                         println!("{} {POP} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_pop)(&party).to_string().yellow().on_black())
