@@ -82,7 +82,8 @@ pub fn check_for_party_end_conditions(party: &mut Party, house_is_full: bool, ro
     false
 }
 
-pub fn ban_guest(player: &mut Player, party: &mut Party) {
+pub fn ban_guest(player: &mut Player, party: &mut Party) -> GuestType {
+    let banned_guest_type: GuestType;
     if let Some(g) = &player.banned.guest.take() {
         player.rolodex.push(g.clone());
     }
@@ -96,6 +97,7 @@ pub fn ban_guest(player: &mut Player, party: &mut Party) {
             i if i.parse::<usize>().map_or(false, |n| (1..=34).contains(&n) && n <= party.attendees.len()) => {
                 let idx = i.parse::<usize>().unwrap() - 1;
                 let banned = party.attendees[idx].clone();
+                banned_guest_type = banned.guest_type.clone();
                 party.attendees.remove(idx);
                 player.banned.guest = Some(banned);
                 player.banned.already_served_time = false;
@@ -104,4 +106,5 @@ pub fn ban_guest(player: &mut Player, party: &mut Party) {
             _ => println!("Invalid input.")
         }
     }
+    banned_guest_type
 }

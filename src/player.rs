@@ -1,5 +1,4 @@
-use crate::{clampedi8::*, guest::*, party::*};
-use std::cmp::min;
+use crate::{clampedi8::*, guest::*};
 use better_default::Default;
 use nestify::nest;
 
@@ -34,21 +33,5 @@ impl Player {
             c += 1;
         }
         self.cash += amount;
-    }
-    #[rustfmt::skip]
-    pub fn end_of_party_score_guests(&mut self, party: &Party) {
-        self.add_pop_from_guest(party.attendees.iter().filter(|a| *a.popularity >= 0).map(|a| *a.popularity).sum());
-        self.add_pop_from_guest(party.attendees.iter().filter(|a| *a.popularity < 0).map(|a| *a.popularity).sum());
-        self.add_cash_from_guest(party.attendees.iter().filter(|a| *a.cash >= 0).map(|a| *a.cash).sum());
-        self.add_pop_from_guest(party.attendees.iter().filter(|a| (a.bonus_pop)(&party) >= 0).filter(|a| a.guest_type != GuestType::DANCER).map(|a| (a.bonus_pop)(&party)).sum());
-        // Note: Dancer Bonus seperated from other bonuses to eliminate duplicate Dancer bonuses.
-        self.add_pop_from_guest(min(
-            16,
-            party.attendees.iter().filter(|a| a.guest_type == GuestType::DANCER).count().pow(2) as i8
-        ));
-        self.add_pop_from_guest(party.attendees.iter().filter(|a| (a.bonus_pop)(&party) < 0).map(|a| (a.bonus_pop)(&party)).sum());
-        self.add_cash_from_guest(party.attendees.iter().filter(|a| (a.bonus_cash)(&party) >= 0).map(|a| (a.bonus_cash)(&party)).sum(),);
-        self.add_cash_from_guest(party.attendees.iter().filter(|a| *a.cash < 0).map(|a| *a.cash).sum());
-        self.add_cash_from_guest(party.attendees.iter().filter(|a| (a.bonus_cash)(&party) < 0).map(|a| (a.bonus_cash)(&party)).sum(),);
     }
 }

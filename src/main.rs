@@ -6,11 +6,11 @@ mod party;
 mod player;
 
 use clearscreen::clear;
-use guest::Guest;
+use colored::*;
+use guest::{Guest, GuestType};
 use rand::{seq::SliceRandom, thread_rng};
 use std::{
-    cmp::{min, Reverse},
-    io::stdin,
+    cmp::{min, Reverse}, io::stdin
 };
 use {
     display::*,
@@ -47,6 +47,7 @@ fn main() {
                 ..Default::default()
             };
             let mut boxed_message: &str = "";
+            let mut tagalong_bringer: GuestType = GuestType::default();
             macro_rules! refresh {
                 (party $message:expr) => {
                     boxed_message = $message;
@@ -100,6 +101,10 @@ fn main() {
                                 &mut party.attendees[newest_guest],
                             );
                             amount += party.attendees[newest_guest].tagalongs;
+                            if party.attendees[newest_guest].tagalongs >= 1 {
+                                tagalong_bringer = party.attendees[newest_guest].guest_type.clone();
+                            }
+
                             party.state = match amount {
                                 1 => IncomingGuest {
                                     amount: 0,
@@ -120,6 +125,16 @@ fn main() {
                             ) {
                                 refresh!(party boxed_message);
                                 break 'ongoing_party;
+                            }
+                            match party.state {
+                                IncomingGuest { amount, greet: _ } if amount >= 1 => {
+                                    let message = format!("{} brought another guest", guest_type_display(&tagalong_bringer));
+                                    refresh!(party message.as_str());
+                                    boxed_message = "";
+                                    pause_for_enter("Press enter to continue...");
+
+                                },
+                                _ => {}
                             }
                             continue 'ongoing_party;
                         }
@@ -729,14 +744,29 @@ fn main() {
             match party.state {
                 TooMuchTrouble => {
                     refresh!(party "Oh no! The cops have shown up! Select a guest to take the blame!");
-                    ban_guest(player, &mut party);
+                    let banned = ban_guest(player, &mut party);
+                    let ban_message = format!("{} has been banned for 1 day.", guest_type_display(&banned));
+                    refresh!(party ban_message.as_str());
+                    pause_for_enter("");
                 }
                 Overcrowded => {
                     refresh!(party "Oh no! The fire marshal has shown up! Select a guest to take the blame!");
-                    ban_guest(player, &mut party);
+                    let banned = ban_guest(player, &mut party);
+                    let ban_message = format!("{} has been banned for 1 day.", guest_type_display(&banned));
+                    refresh!(party ban_message.as_str());
+                    pause_for_enter("");
                 }
+                #[allow(non_snake_case)]
                 EndedSuccessfully => {
-                    player.end_of_party_score_guests(&party);
+                    player.add_pop_from_guest(party.attendees.iter().map(|a| *a.popularity).sum());
+                    player.add_cash_from_guest(party.attendees.iter().filter(|a| *a.cash >= 0).map(|a| *a.cash).sum());
+                    player.add_pop_from_guest(party.attendees.iter().filter(|a| (a.bonus_pop)(&party) >= 0).filter(|a| a.guest_type != GuestType::DANCER).map(|a| (a.bonus_pop)(&party)).sum());
+                    player.add_pop_from_guest(min(16, party.attendees.iter().filter(|a| a.guest_type == GuestType::DANCER).count().pow(2) as i8));
+                    player.add_pop_from_guest(party.attendees.iter().filter(|a| (a.bonus_pop)(&party) < 0).map(|a| (a.bonus_pop)(&party)).sum());
+                    player.add_cash_from_guest(party.attendees.iter().filter(|a| (a.bonus_cash)(&party) >= 0).map(|a| (a.bonus_cash)(&party)).sum(),);
+                    player.add_cash_from_guest(party.attendees.iter().filter(|a| *a.cash < 0).map(|a| *a.cash).sum());
+                    player.add_cash_from_guest(party.attendees.iter().filter(|a| (a.bonus_cash)(&party) < 0).map(|a| (a.bonus_cash)(&party)).sum(),);
+                    
                     if party.attendees.iter().filter(|a| *a.stars == 1).count()
                         - party.attendees.iter().filter(|a| *a.stars == -1).count()
                         >= star_guest_arrivals_for_win
@@ -744,10 +774,32 @@ fn main() {
                         victories[player.id] = true;
                         boxed_message = "You threw the Ultimate Party! Win!"
                     } else {
-                        boxed_message = "Party Ended Successfully! Press \"Enter\" to continue..."
+                        boxed_message = "Party Ended Successfully!"
                     }
                     refresh!(party boxed_message);
-                    pause_for_enter("");
+
+                    let POP = "POP".yellow().on_black();
+                    let NEG_POP = "-POP".yellow().on_red();
+                    let CASH = "$_CASH".green().on_black();
+                    let NEG_CASH = "-$_CASH".green().on_red();
+
+                    println!("\nSum of {POP}/{NEG_POP} attributes: {}", party.attendees.iter().map(|a| *a.popularity).sum::<i8>());
+                    println!("Sum of {CASH} attributes: {}", party.attendees.iter().filter(|a| *a.cash >= 0).map(|a| *a.cash).sum::<i8>().to_string().green().on_black());
+                    for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) > 0).filter(|a| a.guest_type != GuestType::DANCER) {
+                        println!("{} {POP} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_pop)(&party).to_string().yellow().on_black())
+                    }
+                    println!("DANCER {POP} Bonus: {}", min(16, party.attendees.iter().filter(|a| a.guest_type == GuestType::DANCER).count().pow(2) as i8).to_string().yellow().on_black());
+                    for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) < 0).filter(|a| a.guest_type != GuestType::DANCER) {
+                        println!("{} {NEG_POP} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_pop)(&party).to_string().yellow().on_red())
+                    }
+                    for a in party.attendees.iter().filter(|a| (a.bonus_cash)(&party) > 0) {
+                        println!("{} {CASH} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_cash)(&party).to_string().green().on_black())
+                    }
+                    println!("Sum of {NEG_CASH} attributes: {}", party.attendees.iter().filter(|a| *a.cash < 0).map(|a| *a.cash).sum::<i8>().to_string().green().on_red());
+                    for a in party.attendees.iter().filter(|a| (a.bonus_cash)(&party) < 0) {
+                        println!("{} {NEG_CASH} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_cash)(&party).to_string().green().on_red())
+                    }
+                    pause_for_enter("Press enter to continue...");
                 }
                 _ => unreachable!(),
             }

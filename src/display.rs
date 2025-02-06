@@ -1,6 +1,6 @@
 use crate::{
     guest::{AbilityType::*, GuestType::*, *},
-    party::*,
+    party::{PartyState::*, *},
     player::*,
 };
 use clearscreen::clear;
@@ -17,7 +17,7 @@ pub fn pause_for_enter(prompt: &str) {
     stdin().read_line(&mut buffer).unwrap();
 }
 
-const fn guest_type_display(guesttype: &GuestType) -> &str {
+pub const fn guest_type_display(guesttype: &GuestType) -> &str {
     match guesttype {
         OLD_FRIEND => "OLD_FRIEND",
         RICH_PAL => "RICH_PAL",
@@ -201,12 +201,15 @@ pub fn party_display(
                 *party.capacity
             ),
         },
-        match party.attendees.iter().filter(|g| g.trouble).count() as i8
-            - party.attendees.iter().filter(|g| g.chill).count() as i8
-            == 2
-        {
-            true => "X This party is getting out of hand! X".red().on_black(),
-            false => "".white().on_black(),
+        match (
+            &party.state,
+            party.attendees.iter().filter(|g| g.trouble).count() as i8
+                - party.attendees.iter().filter(|g| g.chill).count() as i8
+                == 2
+        ) {
+            (EndedSuccessfully | TooMuchTrouble | Overcrowded, _) => "".white().on_black(),
+            (_, false) => "".white().on_black(),
+            (_, true) => "X This party is getting out of hand! X".red().on_black(),
         }
     );
     match &party.peek_slot {
