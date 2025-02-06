@@ -9,11 +9,8 @@ use std::{cmp::max, f32::INFINITY, io::*};
 
 pub fn pause_for_enter(prompt: &str) {
     print!("{}", prompt);
-    // Flush the output so it prints immediately without waiting for a newline
     stdout().flush().unwrap();
-
     let mut buffer = String::new();
-    // This will block until user presses Enter
     stdin().read_line(&mut buffer).unwrap();
 }
 
@@ -156,14 +153,6 @@ pub fn party_display(
         },
         *party.capacity
     );
-    // if victories.iter().any(|v| *v) {
-    //     for v in victories.iter() {
-    //         if *v {
-    //             println!("Player {} won today!", player.id + 1)
-    //         };
-    //     }
-    //     println!("Last Chance!\n");
-    // }
     println!("[ {} ]", boxed_message.black().on_white());
     print!(
         "Controls:\n {}\n {}\n {}\n {}\n {}\n {}\n {}\n {}\n",
@@ -226,7 +215,6 @@ pub fn party_display(
             }
         );
     }
-    // show that the party overflowed if it did
     if party.attendees.len() > *party.capacity as usize {
         println!(
             "{:>2}{} {} {}",
@@ -362,12 +350,4 @@ pub fn display_information() {
             println!("{}: {}", guest_type_display(i), j.special_info);
         }
     }
-    // println!("COMEDIAN: +5 {POP} Bonus if the party is full to capacity.");
-    // println!("INTROVERT: +1 {POP} Bonus for every empty spot in the party.");
-    // println!("DANCER:\n +1 {POP} Bonus => 1 DANCER present.\n +4 {POP} Bonus => 2 DANCERs present.\n +9 {POP} Bonus => 3 DANCERs present.\n +16 {POP} Bonus => 4 or more DANCERs present.");
-    // println!("MASCOT: +1 {POP} Bonus for every OLD_FRIEND present.");
-    // println!("WRITER: +2 {POP} Bonus for each {TROUBLE} present.");
-    // println!("BARTENDER: +2 {CASH} Bonus for each {TROUBLE} present.");
-    // println!("CLIMBER: +1 {POP} added to Base Stat each time they enter a party.");
-    // println!("WAREWOLF: Toggle between {TROUBLE} and Zero-{TROUBLE} each time they enter a party.");
 }
