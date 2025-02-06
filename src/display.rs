@@ -130,6 +130,20 @@ pub fn party_display(
     boxed_message: &String,
 ) {
     clear().unwrap();
+    match victories.len() {
+        1 => {},
+        2.. => {
+            print!("Ultimate Parties: ["); 
+            for v in victories.iter() {
+                match v {
+                    true => print!(" {} ", "☑".to_string().yellow().on_black()),
+                    false => print!(" {} ", "☐".to_string().red().on_black())
+                }
+            }
+            println!("]")
+        },
+        0 => unreachable!()
+    }
     println!("Player {}, throw a party!", player.id + 1);
     println!(
         "| POP: {:>2}/65 | $: {:>2}/30 |",
@@ -236,6 +250,20 @@ pub fn store_display(
 ) {
     clear().unwrap();
     println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:", player.id + 1);
+    match victories.len() {
+        1 => {},
+        2.. => {
+            print!("Ultimate Parties: ["); 
+            for v in victories.iter() {
+                match v {
+                    true => print!(" {} ", "☑".to_string().yellow().on_black()),
+                    false => print!(" {} ", "☐".to_string().red().on_black())
+                }
+            }
+            println!("]")
+        },
+        0 => unreachable!()
+    }
     println!(
         "{}",
         match victories.len() {
