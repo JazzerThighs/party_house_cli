@@ -1,3 +1,7 @@
+Hello! This project is a demake of the UFO 50 game #25 Party House, ported as a terminal interface game. It is made with the intention of being easily modifiable, so that anyone who wants to add custom behavior or cards to the deck can do so having full access to the source code.
+
+An executable can be created using the standard `cargo build` command if you have cargo installed. Head to https://rustup.rs/ for more information.
+
 Disclaimer
 
 I am not affiliated with Mossmouth or any of the developers of UFO 50. This project is a fan-made demake created for educational and recreational purposes.
