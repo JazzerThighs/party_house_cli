@@ -7,7 +7,7 @@ mod player;
 
 use clearscreen::clear;
 use guest::{Guest, GuestType};
-use rand::{seq::SliceRandom, thread_rng};
+use rand::{seq::SliceRandom, rng};
 use std::{
     cmp::{min, Reverse}, io::stdin
 };
@@ -58,8 +58,8 @@ fn main() {
                 };
             }
             'ongoing_party: loop {
-                let mut rng = thread_rng();
-                player.rolodex.shuffle(&mut rng);
+                let mut random_number = rng();
+                player.rolodex.shuffle(&mut random_number);
                 let (
                     house_is_full,
                     rolodex_is_empty,
@@ -280,8 +280,8 @@ fn main() {
                                     if let Some(peek) = party.peek_slot.take() {
                                         player.rolodex.push(peek);
                                     }
-                                    let mut rng = thread_rng();
-                                    player.rolodex.shuffle(&mut rng);
+                                    let mut random_number = rng();
+                                    player.rolodex.shuffle(&mut random_number);
                                     party.state = IncomingGuest {
                                         amount: 0,
                                         greet: false,
@@ -698,8 +698,8 @@ fn main() {
                                                         .attendees
                                                         .push(player.rolodex[target].clone());
                                                     player.rolodex.remove(target);
-                                                    let mut rng = thread_rng();
-                                                    player.rolodex.shuffle(&mut rng);
+                                                    let mut random_number = rng();
+                                                    player.rolodex.shuffle(&mut random_number);
                                                     party.state = IncomingGuest {
                                                         amount: party.attendees
                                                             [party.attendees.len() - 1]
@@ -711,8 +711,8 @@ fn main() {
                                                     break 'party_input;
                                                 }
                                                 "n" => {
-                                                    let mut rng = thread_rng();
-                                                    player.rolodex.shuffle(&mut rng);
+                                                    let mut random_number = rng();
+                                                    player.rolodex.shuffle(&mut random_number);
                                                     party.state = IncomingGuest {
                                                         amount: 0,
                                                         greet: false,

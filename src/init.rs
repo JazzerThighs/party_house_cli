@@ -1,6 +1,6 @@
 use crate::{display::pause_for_enter, guest::{GuestType::*, *}, party::*, player::*};
 use clearscreen::*;
-use rand::{seq::SliceRandom, thread_rng};
+use rand::{seq::SliceRandom, rng};
 use std::{f32::INFINITY, io::stdin};
 
 pub fn get_num_players() -> usize {
@@ -233,16 +233,16 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
             }
             Ok(num) if num == 6 => {
                 let mut randos_keys: Vec<GuestType> = randos.keys().cloned().collect();
-                let mut rng = thread_rng();
-                randos_keys.shuffle(&mut rng);
+                let mut random_number = rng();
+                randos_keys.shuffle(&mut random_number);
                 let chosen_randos = &randos_keys[..11];
                 for guest in chosen_randos {
                     store.extend(vec![(randos[&guest].clone(), num_stocks)]);
                 }
 
                 let mut star_keys: Vec<GuestType> = star_guests.keys().cloned().collect();
-                let mut rng = thread_rng();
-                star_keys.shuffle(&mut rng);
+                let mut random_number = rng();
+                star_keys.shuffle(&mut random_number);
                 let chosen_stars = &star_keys[..2];
                 for guest in chosen_stars {
                     store.extend(vec![(star_guests[&guest].clone(), f32::INFINITY)]);
