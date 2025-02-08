@@ -6,7 +6,6 @@ mod party;
 mod player;
 
 use clearscreen::clear;
-use colored::*;
 use guest::{Guest, GuestType};
 use rand::{seq::SliceRandom, thread_rng};
 use std::{
