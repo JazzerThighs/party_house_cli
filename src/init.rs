@@ -1,4 +1,4 @@
-use crate::{guest::{GuestType::*, *}, party::*, player::*};
+use crate::{display::pause_for_enter, guest::{GuestType::*, *}, party::*, player::*};
 use clearscreen::*;
 use rand::{seq::SliceRandom, thread_rng};
 use std::{f32::INFINITY, io::stdin};
@@ -26,8 +26,14 @@ pub fn get_num_players() -> usize {
                 });
                 return num;
             },
-            "show w" => println!("THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION."),
-            "show c" => println!("For details, see <https://www.gnu.org/licenses/gpl-3.0.html>."),
+            "show w" => {
+                println!("THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.");
+                pause_for_enter("Press \"Enter\" to continue...");
+            },
+            "show l" => {
+                println!("For details, see <https://www.gnu.org/licenses/gpl-3.0.html>.");
+                pause_for_enter("Press \"Enter\" to continue...");
+            },
             _ => {},
         }
     }
