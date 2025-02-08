@@ -6,7 +6,7 @@ use std::{f32::INFINITY, io::stdin};
 pub fn get_num_players() -> usize {
     loop {
         clear().unwrap();
-        println!("Party House: CLI Edition - Copyright (C) 2025 Jared Profenna\nTo view the README credits and disclaimer, type \"show r\"\n");
+        println!("Party House: CLI Edition - Copyright (C) 2025 JazzerThighs\nTo view the README credits and disclaimer, type \"show r\"\n");
         println!("Welcome to Party House: CLI Edition! Enter the number of players:");
         let mut input = String::new();
         if let Err(e) = stdin().read_line(&mut input) {
