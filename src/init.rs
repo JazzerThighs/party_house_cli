@@ -1,30 +1,34 @@
 use crate::{guest::{GuestType::*, *}, party::*, player::*};
 use clearscreen::*;
 use rand::{seq::SliceRandom, thread_rng};
-use std::{f32::INFINITY, cmp::max, io::stdin};
+use std::{f32::INFINITY, io::stdin};
 
 pub fn get_num_players() -> usize {
     loop {
         clear().unwrap();
+        println!("Party House: CLI Edition - Copyright (C) 2025 Jared Profenna\nThis program comes with ABSOLUTELY NO WARRANTY. Type \"show w\"; This is free software, and you are welcome to redistribute it under certain conditions; type \"show l\" for details.\n");
         println!("Welcome to Party House: CLI Edition! Enter the number of players:");
         let mut input = String::new();
         if let Err(e) = stdin().read_line(&mut input) {
             eprintln!("Error reading input: {}", e);
             continue;
         }
-        match input.trim().parse::<usize>() {
-            Ok(num) => {
+        match input.trim() {
+            i if i.parse::<usize>().map_or(false, |n| n > 0) => {
                 clear().unwrap();
-                print!("{} Player{} selected!\n\n", max(num, 1), {
+                let num = i.parse::<usize>().unwrap();
+                print!("{num} Player{} selected!\n\n", {
                     if num == 1 {
                         ""
                     } else {
                         "s"
                     }
                 });
-                return max(num, 1);
-            }
-            Err(_) => eprintln!("Invalid input. Please enter a valid positive number."),
+                return num;
+            },
+            "show w" => println!("THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION."),
+            "show c" => println!("For details, see <https://www.gnu.org/licenses/gpl-3.0.html>."),
+            _ => {},
         }
     }
 }
