@@ -37,7 +37,7 @@ pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
         2.. => 3,
     };
     let rolodex = {
-        let (friends, _, _) = guest_lists();
+        let (friends, _, _, _) = guest_lists();
         let mut rolodex = vec![friends[&GuestType::OLD_FRIEND].clone(); 4];
         rolodex.extend(vec![friends[&GuestType::RICH_PAL].clone(); 2]);
         rolodex.extend(vec![friends[&GuestType::WILD_BUDDY].clone(); 4]);
@@ -61,7 +61,7 @@ const fn get_num_stocks(num_players: usize) -> f32 {
 }
 
 pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
-    let (friends, randos, star_guests) = guest_lists();
+    let (friends, randos, star_guests, _) = guest_lists();
     let num_stocks = get_num_stocks(num_players);
     macro_rules! place {
         (star_guests, $gt: ident) => {

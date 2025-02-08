@@ -5,7 +5,7 @@ use crate::{
 };
 use clearscreen::clear;
 use colored::*;
-use std::{cmp::max, f32::INFINITY, io::*};
+use std::{cmp::{max, min}, f32::INFINITY, io::*};
 
 pub fn pause_for_enter(prompt: &str) {
     print!("{}", prompt);
@@ -131,18 +131,18 @@ pub fn party_display(
 ) {
     clear().unwrap();
     match victories.len() {
-        1 => {},
+        1 => {}
         2.. => {
-            print!("Ultimate Parties: ["); 
+            print!("Ultimate Parties: [");
             for v in victories.iter() {
                 match v {
                     true => print!(" {} ", "☑".to_string().yellow().on_black()),
-                    false => print!(" {} ", "☐".to_string().red().on_black())
+                    false => print!(" {} ", "☐".to_string().red().on_black()),
                 }
             }
             println!("]")
-        },
-        0 => unreachable!()
+        }
+        0 => unreachable!(),
     }
     println!("Player {}, throw a party!", player.id + 1);
     println!(
@@ -251,18 +251,18 @@ pub fn store_display(
     clear().unwrap();
     println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:", player.id + 1);
     match victories.len() {
-        1 => {},
+        1 => {}
         2.. => {
-            print!("Ultimate Parties: ["); 
+            print!("Ultimate Parties: [");
             for v in victories.iter() {
                 match v {
                     true => print!(" {} ", "☑".to_string().yellow().on_black()),
-                    false => print!(" {} ", "☐".to_string().red().on_black())
+                    false => print!(" {} ", "☐".to_string().red().on_black()),
                 }
             }
             println!("]")
-        },
-        0 => unreachable!()
+        }
+        0 => unreachable!(),
     }
     println!(
         "{}",
@@ -328,54 +328,159 @@ pub fn store_display(
     }
 }
 
+pub fn stylized_term_strings() -> (
+    ColoredString,
+    ColoredString,
+    ColoredString,
+    ColoredString,
+    ColoredString,
+    ColoredString,
+    ColoredString,
+    ColoredString,
+    ColoredString,
+    ColoredString,
+) {
+    (
+        "NON_STAR_GUEST".to_string().white().on_black(),
+        "*STAR_GUEST*".to_string().yellow().on_black(),
+        "*NEG_STAR_GUEST*".to_string().yellow().on_red(),
+        "POP".to_string().yellow().on_black(),
+        "-POP".to_string().yellow().on_red(),
+        "$_CASH".to_string().green().on_black(),
+        "-$_CASH".to_string().green().on_red(),
+        "X_TROUBLE".to_string().red().on_black(),
+        "X_CHILL".to_string().black().on_white(),
+        "+TAGALONGS".to_string().black().on_white(),
+    )
+}
+
 #[allow(non_snake_case)]
-#[rustfmt::skip]
+fn ability_type_info(ability_type: &AbilityType) -> String {
+    let (GUEST, STAR, NEG_STAR, POP, NEG_POP, CASH, NEG_CASH, TROUBLE, _CHILL, TAGALONGS) =
+        stylized_term_strings();
+    match ability_type {
+        NoAbility => "".to_string(),
+        Evac => format!("Evac 🔥: Remove all attendees from the party and reshuffle them back into the rolodex."),
+        Quench => format!("Shutter 📸: Score a single attendee for their {POP}/{NEG_POP}, {CASH}/{NEG_CASH}, and Bonuses."),
+        Cheer => format!("Style ⬆️ : Increase the Pop of one attendee by 1."),
+        Shutter => format!("Quench 🧯: Chill out all {TROUBLE} currently in the party."),
+        Style(_) => format!("StarSwap 🔄: Swap out a {GUEST} attendee for a {STAR}/{NEG_STAR} from the rolodex, or swap out a {STAR}/{NEG_STAR} attendee for a {GUEST} from the rolodex."),
+        StarSwap => format!("Boot 🥾: Kick out 1 attendee, also prevents them from coming back today."),
+        Boot => format!("LoveArrow 💘: Kick out 2 adjacent attendees, also provents them from coming back today."),
+        LoveArrow => format!("Cheer 🎊:  Replenish all non-Cheer abilities for all of the attendees."),
+        Summoning => format!("Summoning ⬇️ : Summon 1 guest from the rolodex to join the party."),
+        Peek => format!("Peek 👀: Find out who is next in line at the front door; If they are then booted, that guest is prevented from coming back today."),
+        Greet => format!("Greet 🚪: Open the door for the next guest in line for the party, score them for their {POP}/{NEG_POP}, {CASH}/{NEG_CASH}, and Bonuses, as well as doing the same for any {TAGALONGS} that they bring with them."),
+    }
+}
+
+#[allow(non_snake_case)]
+fn guest_type_info(guest_type: &GuestType) -> String {
+    let (_GUEST, _STAR, _NEG_STAR, POP, _NEG_POP, CASH, _NEG_CASH, TROUBLE, _CHILL, _TAGALONGS) =
+        stylized_term_strings();
+    match guest_type {
+        OLD_FRIEND => "".to_string(),
+        RICH_PAL => "".to_string(),
+        WILD_BUDDY => "".to_string(),
+        DRIVER => "".to_string(),
+        MONKEY => "".to_string(),
+        SECURITY => "".to_string(),
+        TICKET_TKR => "".to_string(),
+        WATCH_DOG => "".to_string(),
+        HIPPY => "".to_string(),
+        ROCK_STAR => "".to_string(),
+        COMEDIAN => format!("+5 {POP} Bonus if the party is full to capacity."),
+        PRIVATE_I => "".to_string(),
+        INTROVERT => format!("+1 {POP} Bonus for every empty spot in the party."),
+        GRILLMASTR => "".to_string(),
+        MR_POPULAR => "".to_string(),
+        DANCER => format!("\n +1 {POP} Bonus => 1 DANCER present.\n +4 {POP} Bonus => 2 DANCERs present.\n +9 {POP} Bonus => 3 DANCERs present.\n +16 {POP} Bonus => 4 or more DANCERs present."),
+        AUCTIONEER => "".to_string(),
+        MASCOT => format!("+1 {POP} Bonus for every OLD_FRIEND present."),
+        WRESTLER => "".to_string(),
+        GANGSTER => "".to_string(),
+        CUTE_DOG => "".to_string(),
+        GAMBLER => "".to_string(),
+        SPY => "".to_string(),
+        WRITER => format!("WRITER: +2 {POP} Bonus for each {TROUBLE} present."),
+        PHOTOGRPHR => "".to_string(),
+        CHEERLEADR => "".to_string(),
+        COUNSELOR => "".to_string(),
+        ATHLETE => "".to_string(),
+        CATERER => "".to_string(),
+        BARTENDER => format!("+2 {CASH} Bonus for each {TROUBLE} present."),
+        CELEBRITY => "".to_string(),
+        CUPID => "".to_string(),
+        MAGICIAN => "".to_string(),
+        GREETER => "".to_string(),
+        CLIMBER => format!("+1 {POP} added to Base Stat each time they enter a party."),
+        STYLIST => "".to_string(),
+        WAREWOLF => format!("Toggles between {TROUBLE} and Zero-{TROUBLE} each time they enter a party."),
+        ALIEN => "".to_string(),
+        MERMAID => "".to_string(),
+        SUPERHERO => "".to_string(),
+        DINOSAUR => "".to_string(),
+        GENIE => "".to_string(),
+        DRAGON => "".to_string(),
+        LEPRECHAUN => "".to_string(),
+        UNICORN => "".to_string(),
+        GHOST => "".to_string(),
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn display_end_of_party_info(party: &Party) {
+    let (_GUEST, _STAR, _NEG_STAR, POP, NEG_POP, CASH, NEG_CASH, _TROUBLE, _CHILL, _TAGALONGS) =
+        stylized_term_strings();
+
+    println!("\nSum of {POP} attributes: {}", party.attendees.iter().filter(|a| *a.popularity >= 0).map(|a| *a.popularity).sum::<i8>());
+    println!("\nSum of {NEG_POP} attributes: {}", party.attendees.iter().filter(|a| *a.popularity < 0).map(|a| *a.popularity).sum::<i8>());
+    println!("Sum of {CASH} attributes: {}", party.attendees.iter().filter(|a| *a.cash >= 0).map(|a| *a.cash).sum::<i8>().to_string().green().on_black());
+    for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) > 0).filter(|a| a.guest_type != GuestType::DANCER) {
+        println!("{} {POP} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_pop)(&party).to_string().yellow().on_black())
+    }
+    println!("DANCER {POP} Bonus: {}", min(16, party.attendees.iter().filter(|a| a.guest_type == GuestType::DANCER).count().pow(2) as i8).to_string().yellow().on_black());
+    for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) < 0).filter(|a| a.guest_type != GuestType::DANCER) {
+        println!("{} {NEG_POP} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_pop)(&party).to_string().yellow().on_red())
+    }
+    for a in party.attendees.iter().filter(|a| (a.bonus_cash)(&party) > 0) {
+        println!("{} {CASH} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_cash)(&party).to_string().green().on_black())
+    }
+    println!("Sum of {NEG_CASH} attributes: {}", party.attendees.iter().filter(|a| *a.cash < 0).map(|a| *a.cash).sum::<i8>().to_string().green().on_red());
+    for a in party.attendees.iter().filter(|a| (a.bonus_cash)(&party) < 0) {
+        println!("{} {NEG_CASH} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_cash)(&party).to_string().green().on_red())
+    }
+    pause_for_enter("Press enter to continue...");
+}
+
+#[allow(non_snake_case)]
 pub fn display_information() {
-    let GUEST = "NON_STAR_GUEST".white().on_black();
-    let STAR = "*STAR_GUEST*".yellow().on_black();
-    let NEG_STAR = "*NEG_STAR_GUEST*".yellow().on_red();
-    let POP = "POP".yellow().on_black();
-    let NEG_POP = "-POP".yellow().on_red();
-    let CASH = "$_CASH".green().on_black();
-    let NEG_CASH = "-$_CASH".green().on_red();
-    let TROUBLE = "X_TROUBLE".red().on_black();
-    let CHILL = "X_CHILL".black().on_white();
-    let TAGALONGS = "+TAGALONGS".black().on_white();
+    let (GUEST, STAR, NEG_STAR, POP, NEG_POP, CASH, NEG_CASH, TROUBLE, CHILL, TAGALONGS) =
+        stylized_term_strings();
 
     clear().unwrap();
+
     println!("Party House is a Deck Builder! During the Party phase, invite guests by opening the front door. Guests will be pulled at random from your rolodex, at the goal is to invite lots of guests so that you end up with lots of {POP} and {CASH} to spend in the store. At the end of the party, the guests' {POP} and {CASH} attributes will be tallied up, along with any guest-specific Bonuses that they possess. {POP} is self-explanatory, but {CASH} is not. If you end up with less {POP} than you started with, you just end up with 0 {POP}. However, if you go into the negatives for {CASH}, each {CASH} point will be instead deducted from your {POP} balance, -7 {POP} points per {CASH} point.\nOne must worry about {TROUBLE}. If too many {TROUBLE}makers show up to the party, the police will be called and the party will end without granting you any {POP}, {CASH}, or Bonuses! Same goes for if the party overflows; If a guest has {TAGALONGS}, that means that they will forcably bring along their own plus-1s (from your rolodex), even if those plus-1s cannot fit into the house, and the fire marshal will shut it down! Be careful if you have them in the deck, because they can also bring each other for massive chains of unwanted guests!");
     println!("\nWin Condition: End a party successfully when {STAR}s minus {NEG_STAR}s is greater than or equal to the designated amount.");
-    
+
     println!("\nUniversal Guest Attributes:\n{GUEST}/{STAR}/{NEG_STAR}\n{POP}/{NEG_POP}\n{CASH}\n{NEG_CASH}\n{TROUBLE}/{CHILL}\n{TAGALONGS}\nAbility_Available_Symbol");
-    
+
+    let (_, _, _, all_guests) = guest_lists();
+    let mut v: Vec<AbilityType> = vec![];
+    for (i, _) in all_guests.iter() {
+        if !v.contains(&all_guests[i].ability_type) {
+            v.push(all_guests[i].ability_type.clone())
+        }
+    }
     println!("\nAbility Types:");
-    println!("Evac 🔥: Remove all attendees from the party and reshuffle them back into the rolodex."); 
-    println!("Shutter 📸: Score a single attendee for their {POP}/{NEG_POP}, {CASH}/{NEG_CASH}, and Bonuses.");
-    println!("Style ⬆️ : Increase the Pop of one attendee by 1.");
-    println!("Quench 🧯: Chill out all {TROUBLE} currently in the party.");
-    println!("StarSwap 🔄: Swap out a {GUEST} attendee for a {STAR}/{NEG_STAR} from the rolodex, or swap out a {STAR}/{NEG_STAR} attendee for a {GUEST} from the rolodex.");
-    println!("Boot 🥾: Kick out 1 attendee, also prevents them from coming back today.");
-    println!("LoveArrow 💘: Kick out 2 adjacent attendees, also provents them from coming back today.");
-    println!("Cheer 🎊:  Replenish all non-Cheer abilities for all of the attendees.");
-    println!("Summoning ⬇️ : Summon 1 guest from the rolodex to join the party.");
-    println!("Peek 👀: Find out who is next in line at the front door; If they are then booted, that guest is prevented from coming back today.");
-    println!("Greet 🚪: Open the door for the next guest in line for the party, score them for their {POP}/{NEG_POP}, {CASH}/{NEG_CASH}, and Bonuses, as well as doing the same for any {TAGALONGS} that they bring with them.");
+    for i in v.iter() {
+        println!("{}", ability_type_info(i));
+    }
 
     println!("\nSpecial guest Effects:");
-    let (friends, randos, stars) = guest_lists();
-    for (i, j) in friends.iter() {
-        if friends[i].special_info != "".to_string() {
-            println!("{}: {}", guest_type_display(i), j.special_info);
-        }
-    }
-    for (i, j) in randos.iter() {
-        if randos[i].special_info != "".to_string() {
-            println!("{}: {}", guest_type_display(i), j.special_info);
-        }
-    }
-    for (i, j) in stars.iter() {
-        if stars[i].special_info != "".to_string() {
-            println!("{}: {}", guest_type_display(i), j.special_info);
+    for (i, _) in all_guests.iter() {
+        if guest_type_info(&all_guests[i].guest_type) != "".to_string() {
+            println!("{}: {}", guest_type_display(i), guest_type_info(&all_guests[i].guest_type));
         }
     }
 }

@@ -1,7 +1,6 @@
 use crate::{clampedi8::ClampedI8, Party};
 use nestify::nest;
 use better_default::Default;
-use colored::*;
 use std::{cmp::max, collections::HashMap};
 
 nest!(
@@ -9,7 +8,6 @@ nest!(
     pub struct Guest {
         pub id: usize,
         pub sort_value: u8,
-        pub special_info: String,
         #[default('🫥')]
         pub emoji: char,
         pub cost: u8,
@@ -122,9 +120,10 @@ pub fn guest_lists() -> (
     HashMap<GuestType, Guest>,
     HashMap<GuestType, Guest>,
     HashMap<GuestType, Guest>,
+    HashMap<GuestType, Guest>,
 ) {
-    let (mut friends, mut randos, mut star_guests) =
-        (HashMap::new(), HashMap::new(), HashMap::new());
+    let (mut friends, mut randos, mut star_guests, mut all_guests) =
+        (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
 
     use FullHouseAbilityCondition::*;
     use AbilityType::*;
@@ -139,12 +138,12 @@ pub fn guest_lists() -> (
                     ..Default::default()
                 }
             );
+            all_guests.insert(
+                $guest, 
+                $map[&$guest].clone()
+            );
         };
     }
-
-    let POP = "POP".yellow().on_black();
-    let CASH = "$_CASH".green().on_black();
-    let TROUBLE = "X_TROUBLE".red().on_black();
     
     // Friends, in every starting rolodex
     insert_guest!(
@@ -243,7 +242,6 @@ pub fn guest_lists() -> (
         randos,
         COMEDIAN,
         sort_value: 51,
-        special_info: format!("+5 {POP} Bonus if the party is full to capacity."),
         emoji: '🤣',
         cost: 5,
         cash: ClampedI8::pop_cash(-1),
@@ -264,7 +262,6 @@ pub fn guest_lists() -> (
         randos,
         INTROVERT,
         sort_value: 45,
-        special_info: format!("+1 {POP} Bonus for every empty spot in the party."),
         emoji: '😶',
         cost: 4,
         popularity: ClampedI8::pop_cash(1),
@@ -294,7 +291,6 @@ pub fn guest_lists() -> (
         randos,
         DANCER,
         sort_value: 70,
-        special_info: format!("\n +1 {POP} Bonus => 1 DANCER present.\n +4 {POP} Bonus => 2 DANCERs present.\n +9 {POP} Bonus => 3 DANCERs present.\n +16 {POP} Bonus => 4 or more DANCERs present."),
         emoji: '💃',
         cost: 7,
     );
@@ -310,7 +306,6 @@ pub fn guest_lists() -> (
         randos,
         MASCOT,
         sort_value: 54,
-        special_info: format!("+1 {POP} Bonus for every OLD_FRIEND present."),
         emoji: '😸',
         cost: 5,
         popularity: ClampedI8::pop_cash(1),
@@ -369,7 +364,6 @@ pub fn guest_lists() -> (
         randos,
         WRITER,
         sort_value: 81,
-        special_info: format!("WRITER: +2 {POP} Bonus for each {TROUBLE} present."),
         emoji: '🖋',
         cost: 8,
         popularity: ClampedI8::pop_cash(1),
@@ -433,7 +427,6 @@ pub fn guest_lists() -> (
         randos,
         BARTENDER,
         sort_value: 110,
-        special_info: format!("+2 {CASH} Bonus for each {TROUBLE} present."),
         emoji: '🍺',
         cost: 11,
         popularity: ClampedI8::pop_cash(1),
@@ -485,10 +478,8 @@ pub fn guest_lists() -> (
         randos,
         CLIMBER,
         sort_value: 120,
-        special_info: format!("+1 {POP} added to Base Stat each time they enter a party."),
         emoji: '🤳',
         cost: 12,
-        // Popularity increases by 1 time it enters the party, through either the door or by summoning. Can gain more popularity within the span of 1 party if they arrive, are evac'd, and then arrive again.
         entrance_effect: |g| g.popularity += 1
     );
     insert_guest!(
@@ -506,7 +497,6 @@ pub fn guest_lists() -> (
         randos,
         WAREWOLF,
         sort_value: 60,
-        special_info: format!("Toggles between {TROUBLE} and Zero-{TROUBLE} each time they enter a party."),
         emoji: '🐺',
         cost: 5,
         popularity: ClampedI8::pop_cash(4),
@@ -600,5 +590,5 @@ pub fn guest_lists() -> (
         ability_base: 1,
     );
 
-    (friends, randos, star_guests)
+    (friends, randos, star_guests, all_guests)
 }
