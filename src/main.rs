@@ -318,10 +318,12 @@ fn main() {
                                 }
                                 Peek => match (&party.peek_slot, rolodex_is_empty) {
                                     (Some(_), _) => {
-                                        "Someone is already at the front door!";
+                                        party.ability_state = false;
+                                        refresh!(party "Someone is already at the front door!");
                                         continue 'party_input;
                                     }
                                     (None, true) => {
+                                        party.ability_state = false;
                                         refresh!(party "Rolodex is empty, no one left to invite!");
                                         continue 'party_input;
                                     }
@@ -578,6 +580,7 @@ fn main() {
                                 },
                                 LoveArrow => {
                                     if party.attendees.len() < 2 {
+                                        party.ability_state = false;
                                         refresh!(party "At least 2 partygoers need to be paired up by a Cupid's Arrow.");
                                         continue 'party_input;
                                     }
@@ -624,6 +627,7 @@ fn main() {
                                             }) =>
                                             {
                                                 refresh!(party "If you want to pair-kick the two guests at the back, select the guest with the lower of the 2 positional numbers.");
+                                                continue 'love_arrow_input;
                                             }
                                             _ => {
                                                 println!("Invalid input.");
@@ -634,13 +638,13 @@ fn main() {
                                 }
                                 Greet => match (house_is_full, rolodex_is_empty) {
                                     (true, _) => {
-                                        refresh!(party "The house is full, cannot invite a new guest!");
                                         party.ability_state = false;
+                                        refresh!(party "The house is full, cannot invite a new guest!");
                                         continue 'party_input;
                                     }
                                     (_, true) => {
-                                        refresh!(party "Rolodex is empty, no one left to invite!");
                                         party.ability_state = false;
+                                        refresh!(party "Rolodex is empty, no one left to invite!");
                                         continue 'party_input;
                                     }
                                     (false, false) => {
@@ -655,13 +659,13 @@ fn main() {
                                 },
                                 Summoning => match (house_is_full, rolodex_is_empty) {
                                     (true, _) => {
-                                        refresh!(party "The house is full, cannot invite a new guest!");
                                         party.ability_state = false;
+                                        refresh!(party "The house is full, cannot invite a new guest!");
                                         continue 'party_input;
                                     }
                                     (_, true) => {
-                                        refresh!(party "Rolodex is empty, no one left to invite!");
                                         party.ability_state = false;
+                                        refresh!(party "Rolodex is empty, no one left to invite!");
                                         continue 'party_input;
                                     }
                                     (false, false) => {

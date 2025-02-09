@@ -433,20 +433,30 @@ pub fn display_end_of_party_info(party: &Party) {
     let (_GUEST, _STAR, _NEG_STAR, POP, NEG_POP, CASH, NEG_CASH, _TROUBLE, _CHILL, _TAGALONGS) =
         stylized_term_strings();
 
-    println!("\nSum of {POP} attributes: {}", party.attendees.iter().filter(|a| *a.popularity >= 0).map(|a| *a.popularity).sum::<i8>());
-    println!("\nSum of {NEG_POP} attributes: {}", party.attendees.iter().filter(|a| *a.popularity < 0).map(|a| *a.popularity).sum::<i8>());
-    println!("Sum of {CASH} attributes: {}", party.attendees.iter().filter(|a| *a.cash >= 0).map(|a| *a.cash).sum::<i8>().to_string().green().on_black());
-    for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) > 0).filter(|a| a.guest_type != GuestType::DANCER) {
+    if party.attendees.iter().filter(|a| *a.popularity >= 0).map(|a| *a.popularity).sum::<i8>() != 0 {
+        println!("\nSum of {POP} attributes: {}", party.attendees.iter().filter(|a| *a.popularity >= 0).map(|a| *a.popularity).sum::<i8>());
+    }
+    if party.attendees.iter().filter(|a| *a.popularity < 0).map(|a| *a.popularity).sum::<i8>() != 0 {
+        println!("Sum of {NEG_POP} attributes: {}", party.attendees.iter().filter(|a| *a.popularity < 0).map(|a| *a.popularity).sum::<i8>());
+    }
+    if party.attendees.iter().filter(|a| *a.cash >= 0).map(|a| *a.cash).sum::<i8>() != 0 {
+        println!("Sum of {CASH} attributes: {}", party.attendees.iter().filter(|a| *a.cash >= 0).map(|a| *a.cash).sum::<i8>().to_string().green().on_black());
+    }
+    for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) > 0) {
         println!("{} {POP} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_pop)(&party).to_string().yellow().on_black())
     }
-    println!("DANCER {POP} Bonus: {}", min(16, party.attendees.iter().filter(|a| a.guest_type == GuestType::DANCER).count().pow(2) as i8).to_string().yellow().on_black());
-    for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) < 0).filter(|a| a.guest_type != GuestType::DANCER) {
+    if party.attendees.iter().filter(|a| a.guest_type == GuestType::DANCER).count() > 0 {
+        println!("DANCER {POP} Bonus: {}", min(16, party.attendees.iter().filter(|a| a.guest_type == GuestType::DANCER).count().pow(2) as i8).to_string().yellow().on_black());
+    }
+    for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) < 0) {
         println!("{} {NEG_POP} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_pop)(&party).to_string().yellow().on_red())
     }
     for a in party.attendees.iter().filter(|a| (a.bonus_cash)(&party) > 0) {
         println!("{} {CASH} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_cash)(&party).to_string().green().on_black())
     }
-    println!("Sum of {NEG_CASH} attributes: {}", party.attendees.iter().filter(|a| *a.cash < 0).map(|a| *a.cash).sum::<i8>().to_string().green().on_red());
+    if party.attendees.iter().filter(|a| *a.cash < 0).map(|a| *a.cash).sum::<i8>() != 0 {
+        println!("Sum of {NEG_CASH} attributes: {}", party.attendees.iter().filter(|a| *a.cash < 0).map(|a| *a.cash).sum::<i8>().to_string().green().on_red());
+    }
     for a in party.attendees.iter().filter(|a| (a.bonus_cash)(&party) < 0) {
         println!("{} {NEG_CASH} Bonus: {}", guest_type_display(&a.guest_type), (a.bonus_cash)(&party).to_string().green().on_red())
     }
