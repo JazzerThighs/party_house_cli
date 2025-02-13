@@ -163,14 +163,24 @@ fn main() {
                         continue 'party_input;
                     }
                     match input.trim() {
-                        "h" => {
-                            boxed_message = "";
-                            party.state = IncomingGuest {
-                                amount: 1,
-                                greet: false,
-                            };
-                            break 'party_input;
-                        }
+                        "h" => match (house_is_full, rolodex_is_empty) {
+                            (true, _) => {
+                                refresh!(party "The house is full, cannot invite a new guest!");
+                                continue 'party_input;
+                            }
+                            (_, true) => {
+                                refresh!(party "Rolodex is empty, no one left to invite!");
+                                continue 'party_input;
+                            }
+                            (false, false) => {
+                                boxed_message = "";
+                                party.state = IncomingGuest {
+                                    amount: 1,
+                                    greet: false,
+                                };
+                                break 'party_input;
+                            }
+                        },
                         "r" => {
                             let mut rolodex_view: Vec<&Guest> = player.rolodex.iter().collect();
                             let mut attendees_view: Vec<&Guest> = party.attendees.iter().collect();
