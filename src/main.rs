@@ -299,32 +299,55 @@ fn main() {
                                     break 'party_input;
                                 }
                                 Cheer => {
-                                    party.attendees[idx].ability_stock -= 1;
-                                    party.ability_state = false;
-                                    for p in party
+                                    if party
                                         .attendees
-                                        .iter_mut()
-                                        .filter(|g| g.ability_type != Cheer)
+                                        .iter()
+                                        .filter(|a| a.ability_type != Cheer)
+                                        .filter(|a| a.ability_stock < a.ability_base)
+                                        .count() == 0 
                                     {
-                                        p.ability_stock = p.ability_base;
+                                        party.ability_state = false;
+                                        refresh!(party "The party has no one who can gain an ability stock from a Cheer.");
+                                        continue 'party_input;
+                                    } else {
+                                        party.attendees[idx].ability_stock -= 1;
+                                        party.ability_state = false;
+                                        for p in party
+                                            .attendees
+                                            .iter_mut()
+                                            .filter(|g| g.ability_type != Cheer)
+                                        {
+                                            p.ability_stock = p.ability_base;
+                                        }
+                                        party.state = IncomingGuest {
+                                            amount: 0,
+                                            greet: false,
+                                        };
+                                        break 'party_input;
                                     }
-                                    party.state = IncomingGuest {
-                                        amount: 0,
-                                        greet: false,
-                                    };
-                                    break 'party_input;
                                 }
                                 Quench => {
-                                    party.attendees[idx].ability_stock -= 1;
-                                    party.ability_state = false;
-                                    for p in party.attendees.iter_mut() {
-                                        p.trouble = false;
+                                    if party
+                                        .attendees
+                                        .iter()
+                                        .filter(|a| a.trouble)
+                                        .count() == 0 
+                                    {
+                                        party.ability_state = false;
+                                        refresh!(party "The party has no one that needs counseling.");
+                                        continue 'party_input;
+                                    } else {
+                                        party.attendees[idx].ability_stock -= 1;
+                                        party.ability_state = false;
+                                        for p in party.attendees.iter_mut() {
+                                            p.trouble = false;
+                                        }
+                                        party.state = IncomingGuest {
+                                            amount: 0,
+                                            greet: false,
+                                        };
+                                        break 'party_input;
                                     }
-                                    party.state = IncomingGuest {
-                                        amount: 0,
-                                        greet: false,
-                                    };
-                                    break 'party_input;
                                 }
                                 Peek => match (&party.peek_slot, rolodex_is_empty) {
                                     (Some(_), _) => {
