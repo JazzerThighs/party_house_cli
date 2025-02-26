@@ -68,9 +68,6 @@ pub fn init_players(num_players: usize) -> (Vec<Player>, usize) {
         let mut rolodex = vec![friends[&GuestType::OLD_FRIEND].clone(); 4];
         rolodex.extend(vec![friends[&GuestType::RICH_PAL].clone(); 2]);
         rolodex.extend(vec![friends[&GuestType::WILD_BUDDY].clone(); 4]);
-        for i in 0..rolodex.len() {
-            rolodex[i].id = i;
-        }
         rolodex
     };
     for i in 0..num_players {
