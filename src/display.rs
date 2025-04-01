@@ -141,7 +141,7 @@ pub fn guest_type_info(guest_type: &GuestType) -> String {
         INTROVERT => format!("+1 {POP} Bonus for every empty spot in the party."),
         DANCER => format!("\n +1 {POP} Bonus => 1 DANCER present.\n +4 {POP} Bonus => 2 DANCERs present.\n +9 {POP} Bonus => 3 DANCERs present.\n +16 {POP} Bonus => 4 or more DANCERs present."),
         MASCOT => format!("+1 {POP} Bonus for every OLD_FRIEND present."),
-        WRITER => format!("WRITER: +2 {POP} Bonus for each {TROUBLE} present."),
+        WRITER => format!("+2 {POP} Bonus for each {TROUBLE} present."),
         BARTENDER => format!("+2 {CASH} Bonus for each {TROUBLE} present."),
         CLIMBER => format!("+1 {POP} added to Base Stat each time they enter a party."),
         WAREWOLF => format!("Toggles between {TROUBLE} and Zero-{TROUBLE} each time they enter a party."),
@@ -247,12 +247,14 @@ pub fn display_information() {
     }
     println!("\nAbility Types:");
     for i in v.iter() {
-        println!("{}", ability_type_info(i));
+        if *i != NoAbility {
+            println!("{}", ability_type_info(i));
+        }
     }
 
     println!("\nSpecial guest Effects:");
     for (i, _) in all_guests.iter() {
-        if guest_type_info(&all_guests[i].guest_type).is_empty() {
+        if !guest_type_info(&all_guests[i].guest_type).is_empty() {
             println!(
                 "{}: {}",
                 guest_type_display(i),
@@ -401,6 +403,9 @@ pub fn display_end_of_party_info(party: &Party) {
                 .filter(|a| *a.popularity >= 0)
                 .map(|a| *a.popularity)
                 .sum::<i8>()
+                .to_string()
+                .yellow()
+                .on_black()
         );
     }
     if party
@@ -419,6 +424,9 @@ pub fn display_end_of_party_info(party: &Party) {
                 .filter(|a| *a.popularity < 0)
                 .map(|a| *a.popularity)
                 .sum::<i8>()
+                .to_string()
+                .yellow()
+                .on_red()
         );
     }
     if party

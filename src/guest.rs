@@ -493,6 +493,7 @@ pub fn guest_lists() -> (
         MERMAID,
         emoji: '🧜',
         cost: 35,
+        tagalongs: 1,
         stars: ClampedI8::stars(1),
     );
     insert_guest!(
