@@ -120,7 +120,7 @@ fn ability_type_info(ability_type: &AbilityType) -> String {
         NoAbility => "".to_string(),
         Evac => format!("Evac 🔥: Remove all attendees from the party and reshuffle them back into the rolodex."),
         Shutter => format!("Shutter 📸: Score a single attendee for their {POP}/{NEG_POP}, {CASH}/{NEG_CASH}, and Bonuses."),
-        Style(_) => format!("Style ⬆️ : Increase the Pop of one attendee by a designated amount."),
+        Style(_) => format!("Style ⬆️ : Increase the {POP} of one attendee by a designated amount."),
         Quench => format!("Quench 🧯: Chill out all {TROUBLE} currently in the party."),
         StarSwap => format!("StarSwap 🔄: Swap out a {GUEST} attendee for a {STAR}/{NEG_STAR} from the rolodex, or swap out a {STAR}/{NEG_STAR} attendee for a {GUEST} from the rolodex."),
         Boot => format!("Boot 🥾: Kick out 1 attendee, also prevents them from coming back today."),
@@ -233,7 +233,7 @@ pub fn display_information() {
 
     clear().unwrap();
 
-    println!("Party House is a Deck Builder! During the Party phase, invite guests by opening the front door. Guests will be pulled at random from your rolodex, at the goal is to invite lots of guests so that you end up with lots of {POP} and {CASH} to spend in the store. At the end of the party, the guests' {POP} and {CASH} attributes will be tallied up, along with any guest-specific Bonuses that they possess. {POP} is self-explanatory, but {CASH} is not. If you end up with less {POP} than you started with, you just end up with 0 {POP}. However, if you go into the negatives for {CASH}, each {CASH} point will be instead deducted from your {POP} balance, -7 {POP} points per {CASH} point.\nOne must worry about {TROUBLE}. If too many {TROUBLE}makers show up to the party, the police will be called and the party will end without granting you any {POP}, {CASH}, or Bonuses! Same goes for if the party overflows; If a guest has {TAGALONGS}, that means that they will forcably bring along their own plus-1s (from your rolodex), even if those plus-1s cannot fit into the house, and the fire marshal will shut it down! Be careful if you have them in the deck, because they can also bring each other for massive chains of unwanted guests!");
+    println!("Party House is a Deck Builder! During the Party phase, invite guests by opening the front door. Guests will be pulled at random from your rolodex, and the goal is to invite lots of guests so that you end up with lots of {POP} and {CASH} to spend in the store. At the end of the party, the guests' {POP} and {CASH} attributes will be tallied up, along with any guest-specific Bonuses that they possess. {POP} is self-explanatory, but {CASH} is not. If you end up with less {POP} than you started with, you just end up with 0 {POP}. However, if you go into the negatives for {CASH}, each {CASH} point will be instead deducted from your {POP} balance, -7 {POP} points per {CASH} point.\nOne must worry about {TROUBLE}. If too many {TROUBLE}makers show up to the party, the police will be called and the party will end without granting you any {POP}, {CASH}, or Bonuses! Same goes for if the party overflows; If a guest has {TAGALONGS}, that means that they will forcably bring along their own plus-1s (from your rolodex), even if those plus-1s cannot fit into the house, and the fire marshal will shut it down! Be careful if you have them in the deck, because they can also bring each other for massive chains of unwanted guests!");
     println!("\nWin Condition: End a party successfully when {STAR}s minus {NEG_STAR}s is greater than or equal to the designated amount.");
 
     println!("\nUniversal Guest Attributes:\n{GUEST}/{STAR}/{NEG_STAR}\n{POP}/{NEG_POP}\n{CASH}\n{NEG_CASH}\n{TROUBLE}/{CHILL}\n{TAGALONGS}\nAbility_Available_Symbol");
@@ -533,6 +533,7 @@ pub fn display_end_of_party_info(party: &Party) {
     pause_for_enter("Press enter to continue...");
 }
 
+#[allow(non_snake_case)]
 pub fn store_display(
     store: &Vec<(Guest, f32)>,
     player: &Player,
@@ -541,8 +542,12 @@ pub fn store_display(
     stars_to_win: &usize,
     boxed_message: &String,
 ) {
+    let (_GUEST, _STAR, _NEG_STAR, POP, _NEG_POP, CASH, _NEG_CASH, _TROUBLE, _CHILL, _TAGALONGS) =
+        stylized_term_strings();
+    
     clear().unwrap();
-    println!("Player {}, spend Pop to add guests to your rolodex. Spend Cash to expand the capacity of your house:", player.id + 1);
+    
+    println!("Player {}, spend {POP} to add guests to your rolodex. Spend {CASH} to expand the capacity of your house:", player.id + 1);
     match victories.len() {
         1 => {}
         2.. => {
