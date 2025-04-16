@@ -6,7 +6,7 @@ use std::{cmp::max, collections::HashMap};
 nest!(
     #[derive(Default, Debug, Clone)]*
     pub struct Guest {
-        pub sort_value: u8,
+        pub sort_value: u16,
         #[default('🙂')]
         pub emoji: char,
         pub cost: u8,

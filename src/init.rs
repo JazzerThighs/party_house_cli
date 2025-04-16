@@ -1,4 +1,4 @@
-use crate::{display::pause_for_enter, guest::{GuestType::*, *}, party::*, player::*};
+use crate::{display::{display_guest, pause_for_enter}, guest::{GuestType::*, *}, party::*, player::*};
 use clearscreen::*;
 use rand::{seq::SliceRandom, rng};
 use std::{f32::INFINITY, io::stdin};
@@ -174,33 +174,28 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
         place!(star_guests, UNICORN),
         place!(star_guests, GHOST),
     ];
-    print!("Select desired Party Scenerio:\n\n");
-    print!("1 -> Alien Invitation");
+    print!("Select desired Party Scenerio:\n\n1 -> Alien Invitation");
     for i in 0..alien_invitation.len() {
         print!("{} ", alien_invitation[i].0.emoji);
     }
-    print!("\n\n");
-    print!("2 -> High Or Low");
+    print!("\n\n2 -> High Or Low");
     for i in 0..high_or_low.len() {
         print!("{} ", high_or_low[i].0.emoji);
     }
-    print!("\n\n");
-    print!("3 -> Best Wishes");
+    print!("\n\n3 -> Best Wishes");
     for i in 0..best_wishes.len() {
         print!("{} ", best_wishes[i].0.emoji);
     }
-    print!("\n\n");
-    print!("4 -> Money Management");
+    print!("\n\n4 -> Money Management");
     for i in 0..money_management.len() {
         print!("{} ", money_management[i].0.emoji);
     }
-    print!("\n\n");
-    print!("5 -> A Magical Night");
+    print!("\n\n5 -> A Magical Night");
     for i in 0..a_magical_night.len() {
         print!("{} ", a_magical_night[i].0.emoji);
     }
-    print!("\n\n");
-    print!("6 -> Randomized Scenerio\n");
+    print!("\n\n6 -> Randomized Scenerio");
+    print!("\n\n7 -> Create a Custom Scenerio (MAKE-GLEE)\n");
     loop {
         let mut input = String::new();
         if let Err(e) = stdin().read_line(&mut input) {
@@ -246,18 +241,85 @@ pub fn init_scenerio(num_players: usize) -> Vec<(Guest, f32)> {
                 }
                 break;
             }
+            Ok(num) if num == 7 => {
+                store = MAKE_GLEE(store, num_players);
+                break;
+            },
             Ok(_) | Err(_) => println!("Invalid input. Please enter a valid number as displayed."),
         }
     }
     clear().unwrap();
-    for g in 0..store.len() {
-        store[g].0.trouble = store[g].0.trouble_base;
-        store[g].0.chill = store[g].0.chill_base;
-        store[g].0.ability_stock = store[g].0.ability_base;
+    for g in store.iter_mut() {
+        g.0.trouble = g.0.trouble_base;
+        g.0.chill = g.0.chill_base;
+        g.0.ability_stock = g.0.ability_base;
     }
     store.sort_by(|a, b| a.0.sort_value.cmp(&b.0.sort_value));
     
     store
+}
+
+#[allow(non_snake_case)]
+fn MAKE_GLEE(mut store: Vec<(Guest, f32)>, num_players: usize) -> Vec<(Guest, f32)> {
+    let (_, _, _, all_guests) = guest_lists();
+    let mut all_guests_vec: Vec<Guest> = vec![];
+    for (i, _) in all_guests.iter() {
+        all_guests_vec.push(all_guests[i].clone())
+    }
+    all_guests_vec.sort_by_key(|guest| { guest.sort_value });
+    for g in all_guests_vec.iter_mut() {
+        g.trouble = g.trouble_base;
+        g.chill = g.chill_base;
+        g.ability_stock = g.ability_base;
+    }
+    let len = all_guests_vec.len();
+    loop {
+        clear().unwrap();
+        println!("Select a number from 1..={len} to add that guest to the store for your scenerio, enter \"remove\" to remove the last guest added, or enter \"done\" to begin the game.\n");
+        let mut id_all = 1;
+        for g in all_guests_vec.iter() {
+            println!("{id_all:>2}) {}", display_guest(&g));
+            id_all += 1;
+        }
+        println!("\nThe store currently contains the following guests:\n");
+        store.sort_by_key(|guest| <i8>::abs(*guest.0.stars));
+        let mut id_store = 1;
+        if store.len() != 0 {
+            for g in store.iter() {
+                println!("{id_store:>2}) {}", display_guest(&g.0));
+                id_store += 1;
+            }
+        } else {
+            println!(" 1) *store is empty*")
+        }
+        println!();
+        let mut input = String::new();
+        if let Err(e) = stdin().read_line(&mut input) {
+            eprintln!("Error reading input: {}", e);
+            continue;
+        }
+        match input.trim() {
+            i if i.parse::<usize>().map_or(false, |n| {
+                (1..=len).contains(&n)
+            }) => {
+                let idx = i.parse::<usize>().unwrap();
+                store.push((
+                    all_guests_vec[idx - 1].clone(), 
+                    if *all_guests_vec[idx - 1].stars == 0 {
+                        get_num_stocks(num_players)
+                    } else {
+                        INFINITY
+                    } 
+                ));
+            },
+            "remove" => if store.len() > 0 {
+                store.pop().unwrap();
+            },
+            "done" => return store,
+            _ => {}
+        }
+        continue;
+    }
 }
 
 pub fn handle_end_of_party(player: &mut Player, party: &mut Party) {
