@@ -437,7 +437,7 @@ pub fn party_input(
                                             goes_away = party.attendees[target].clone();
                                             party.attendees.remove(target);
                                             party.attendees.insert(target, replacement);
-                                            player.rolodex.push(goes_away);
+                                            player.booted.push(goes_away);
                                             party.state = IncomingGuest {
                                                 amount: party.attendees[target].tagalongs,
                                                 greet: false,
