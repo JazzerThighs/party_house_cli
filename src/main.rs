@@ -214,6 +214,14 @@ fn main() {
                             .map(|a| *a.cash)
                             .sum(),
                     );
+                    player.add_cash_from_guest(
+                        party
+                            .attendees
+                            .iter()
+                            .filter(|a| *a.cash < 0)
+                            .map(|a| *a.cash)
+                            .sum(),
+                    );
                     player.add_pop_from_guest(
                         party
                             .attendees
@@ -248,14 +256,7 @@ fn main() {
                             .map(|a| (a.bonus_cash)(&party))
                             .sum(),
                     );
-                    player.add_cash_from_guest(
-                        party
-                            .attendees
-                            .iter()
-                            .filter(|a| *a.cash < 0)
-                            .map(|a| *a.cash)
-                            .sum(),
-                    );
+                    
                     player.add_cash_from_guest(
                         party
                             .attendees

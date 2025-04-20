@@ -450,6 +450,27 @@ pub fn display_end_of_party_info(party: &Party) {
                 .on_black()
         );
     }
+    if party
+        .attendees
+        .iter()
+        .filter(|a| *a.cash < 0)
+        .map(|a| *a.cash)
+        .sum::<i8>()
+        != 0
+    {
+        println!(
+            "Sum of {NEG_CASH} attributes: {}",
+            party
+                .attendees
+                .iter()
+                .filter(|a| *a.cash < 0)
+                .map(|a| *a.cash)
+                .sum::<i8>()
+                .to_string()
+                .green()
+                .on_red()
+        );
+    }
     for a in party.attendees.iter().filter(|a| (a.bonus_pop)(&party) > 0) {
         println!(
             "{} {POP} Bonus: {}",
@@ -497,27 +518,6 @@ pub fn display_end_of_party_info(party: &Party) {
             guest_type_display(&a.guest_type),
             (a.bonus_cash)(&party).to_string().green().on_black()
         )
-    }
-    if party
-        .attendees
-        .iter()
-        .filter(|a| *a.cash < 0)
-        .map(|a| *a.cash)
-        .sum::<i8>()
-        != 0
-    {
-        println!(
-            "Sum of {NEG_CASH} attributes: {}",
-            party
-                .attendees
-                .iter()
-                .filter(|a| *a.cash < 0)
-                .map(|a| *a.cash)
-                .sum::<i8>()
-                .to_string()
-                .green()
-                .on_red()
-        );
     }
     for a in party
         .attendees
