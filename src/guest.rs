@@ -218,7 +218,7 @@ pub fn guest_lists() -> (
         HIPPY,
         emoji: '🌼',
         cost: 4,
-        popularity: ClampedI8::pop_cash(2),
+        popularity: ClampedI8::pop_cash(1),
         chill_base: true,
     );
     insert_guest!(
