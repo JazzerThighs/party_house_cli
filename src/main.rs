@@ -31,7 +31,7 @@ fn main() {
 
     'game: loop {
         clear().unwrap();
-        for player in players.iter_mut() {
+        'take_turns: for player in players.iter_mut() {
             for guest in player.rolodex.iter_mut() {
                 guest.trouble = guest.trouble_base;
                 guest.chill = guest.chill_base;
@@ -273,7 +273,7 @@ fn main() {
                         victories[player.id] = true;
                         refresh!(party "You threw the Ultimate Party! Win!".to_string());
                         pause_for_enter("");
-                        break;
+                        continue 'take_turns;
                     } else {
                         refresh!(party "Party Ended Successfully!".to_string());
                     }
@@ -412,9 +412,8 @@ fn main() {
                 for i in 0..victories.len() {
                     match victories[i] {
                         true => println!("Player {} is the Party Master! Win!", i + 1),
-                        false => {}
+                        false => println!("Player {}'s vibes were off! Lose!", i + 1)
                     }
-                    println!("Everyone else loses! All of their vibes were way off!")
                 }
             }
         }

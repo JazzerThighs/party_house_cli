@@ -575,7 +575,7 @@ pub fn store_display(
         stars_to_win.to_string().yellow().on_black()
     );
     println!(
-        "| POP: {:>2}/65 | $: {:>2}/30 | Capacity: {:>2}/34 | Rolodex: {:>2} |\n",
+        "| {POP}: {:>2}/65 | {CASH}: {:>2}/30 | Capacity: {:>2}/34 | Rolodex: {:>2} |\n",
         (*player.popularity).to_string().yellow(),
         (*player.cash).to_string().green(),
         (*player.capacity).to_string().white().on_black(),
@@ -597,7 +597,7 @@ pub fn store_display(
     );
     print!("[ {} ]\n\n", boxed_message.black().on_white());
     for i in 0..store.len() {
-        println!(
+        let store_stock = format!(
             "{:>2}) {}  {}",
             i + 1,
             display_guest(&store[i].0),
@@ -613,6 +613,14 @@ pub fn store_display(
                     store[i].0.cost.to_string().yellow().on_black()
                 ),
             },
+        );
+        println!(
+            "{}{store_stock}",
+            if *player.cash >= store[i].0.cost as i8 {
+                "🏷️"
+            } else {
+                "❌"
+            }
         );
     }
     match *player.capacity {

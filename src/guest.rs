@@ -7,22 +7,15 @@ nest!(
     #[derive(Default, Debug, Clone)]*
     pub struct Guest {
         pub sort_value: u16,
-        #[default('🙂')]
-        pub emoji: char,
-        pub cost: u8,
-        #[default(ClampedI8::pop_cash(0))]
-        pub popularity: ClampedI8,
-        #[default(ClampedI8::pop_cash(0))]
-        pub cash: ClampedI8,
-        #[default(ClampedI8::stars(0))]
-        pub stars: ClampedI8,
-        pub tagalongs: u8,
-        #[default(|_| 0)] 
-        pub bonus_pop: fn(&Party) -> i8,
-        #[default(|_| 0)] 
-        pub bonus_cash: fn(&Party) -> i8,
-        #[default(|_| ())]
-        pub entrance_effect: fn(&mut Self),
+        #[default('🙂')]                    pub emoji: char,
+                                            pub cost: u8,
+        #[default(ClampedI8::pop_cash(0))]  pub popularity: ClampedI8,
+        #[default(ClampedI8::pop_cash(0))]  pub cash: ClampedI8,
+        #[default(ClampedI8::stars(0))]     pub stars: ClampedI8,
+                                            pub tagalongs: u8,
+        #[default(|_| 0)]                   pub bonus_pop: fn(&Party) -> i8,
+        #[default(|_| 0)]                   pub bonus_cash: fn(&Party) -> i8,
+        #[default(|_| ())]                  pub entrance_effect: fn(&mut Self),
         
         pub trouble_base: bool,
         pub trouble: bool,
@@ -127,7 +120,9 @@ pub fn guest_lists() -> (
     use FullHouseAbilityCondition::*;
     use AbilityType::*;
     use GuestType::*;
+    
     let mut sort_value = 0;
+    
     macro_rules! insert_guest {
         ($map:expr, $guest:ident $(, $field:ident : $value:expr )* $(,)?) => {
             sort_value += 1;
@@ -218,7 +213,7 @@ pub fn guest_lists() -> (
         HIPPY,
         emoji: '🌼',
         cost: 4,
-        popularity: ClampedI8::pop_cash(2),
+        popularity: ClampedI8::pop_cash(1),
         chill_base: true,
     );
     insert_guest!(
