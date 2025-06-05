@@ -630,9 +630,9 @@ pub fn store_display(
             ..=4 => unreachable!(),
         };
     let capacity_tag = if *player.cash >= cost_of_expansion && cost_of_expansion != 0 {
-            "🏷️"
+            "🏷️ "
         } else {
-            "❌"
+            "❌ "
         };
     match *player.capacity {
         5..=15 => println!(
