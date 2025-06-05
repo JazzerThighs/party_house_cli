@@ -617,7 +617,7 @@ pub fn store_display(
         println!(
             "{}{store_stock}",
             if *player.popularity >= store[i].0.cost as i8 {
-                "🏷️ "
+                "🏷️  "
             } else {
                 "❌ "
             }
@@ -630,7 +630,7 @@ pub fn store_display(
             ..=4 => unreachable!(),
         };
     let capacity_tag = if *player.cash >= cost_of_expansion && cost_of_expansion != 0 {
-            "🏷️ "
+            "🏷️  "
         } else {
             "❌ "
         };
