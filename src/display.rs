@@ -598,7 +598,7 @@ pub fn store_display(
     print!("[ {} ]\n\n", boxed_message.black().on_white());
     for i in 0..store.len() {
         let store_stock = format!(
-            "{:>2}) {}  {}",
+            "{:>2}: {}  {}",
             i + 1,
             display_guest(&store[i].0),
             match store[i].1 {
@@ -616,20 +616,31 @@ pub fn store_display(
         );
         println!(
             "{}{store_stock}",
-            if *player.cash >= store[i].0.cost as i8 {
-                "🏷️"
+            if *player.popularity >= store[i].0.cost as i8 {
+                "🏷️ "
             } else {
-                "❌"
+                "❌ "
             }
         );
     }
+    let cost_of_expansion = match *player.capacity {
+            5..=15 => *player.capacity - 3,
+            16..=33 => 12,
+            34.. => 0,
+            ..=4 => unreachable!(),
+        };
+    let capacity_tag = if *player.cash >= cost_of_expansion && cost_of_expansion != 0 {
+            "🏷️"
+        } else {
+            "❌"
+        };
     match *player.capacity {
         5..=15 => println!(
-            "Upgrade Capacity => Cost: {}",
+            "{capacity_tag}Upgrade Capacity => Cost: {}",
             (*player.capacity - 3).to_string().green().on_black()
         ),
-        16..=33 => println!("Upgrade Capacity => Cost: {}", "12".green().on_black()),
-        34.. => println!("House Capacity Maxed Out! (34 Spots Max)"),
+        16..=33 => println!("{capacity_tag}Upgrade Capacity => Cost: {}", "12".green().on_black()),
+        34.. => println!("{capacity_tag}House Capacity Maxed Out! (34 Spots Max)"),
         ..=4 => unreachable!(),
     }
 }

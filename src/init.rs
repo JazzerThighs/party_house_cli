@@ -1,5 +1,6 @@
 use crate::{display::{display_guest, pause_for_enter}, guest::{GuestType::*, *}, party::*, player::*};
 use clearscreen::*;
+use colored::Colorize;
 use rand::{seq::SliceRandom, rng};
 use std::{f32::INFINITY, io::stdin};
 
@@ -278,7 +279,7 @@ fn MAKE_GLEE(mut store: Vec<(Guest, f32)>, num_players: usize) -> Vec<(Guest, f3
         println!("Select a number from 1..={len} to add that guest to the store for your scenerio, enter \"remove\" to remove the last guest added, or enter \"done\" to begin the game.\n");
         let mut id_all = 1;
         for g in all_guests_vec.iter() {
-            println!("{id_all:>2}) {}", display_guest(&g));
+            println!("{id_all:>2}) {} Cost:{}", display_guest(&g), g.cost.to_string().yellow().on_black());
             id_all += 1;
         }
         println!("\nThe store currently contains the following guests:\n");
